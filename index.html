@@ -1,0 +1,1554 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Conviver Run 2026 · Painel do Time</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+  :root{
+    --bg:#16101c;
+    --bg-elevated:#1d1526;
+    --card:#241a30;
+    --card-hover:#2b1f3a;
+    --border:#372a47;
+    --text-primary:#f4eff7;
+    --text-secondary:#b6a8c4;
+    --text-tertiary:#7c6d8c;
+    --coral:#ff6b4a;
+    --coral-soft:rgba(255,107,74,.14);
+    --purple:#8b5cf6;
+    --purple-soft:rgba(139,92,246,.16);
+    --success:#3ddc84;
+    --success-soft:rgba(61,220,132,.14);
+    --warning:#ffb454;
+    --warning-soft:rgba(255,180,84,.14);
+    --danger:#ff5470;
+    --danger-soft:rgba(255,84,112,.14);
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:
+      radial-gradient(1200px 600px at 85% -10%, rgba(139,92,246,.16), transparent 60%),
+      radial-gradient(900px 500px at -10% 10%, rgba(255,107,74,.10), transparent 55%),
+      var(--bg);
+    color:var(--text-primary);
+    font-family:'Inter',system-ui,sans-serif;
+    -webkit-font-smoothing:antialiased;
+    min-height:100vh;
+  }
+  .wrap{max-width:1180px;margin:0 auto;padding:28px 20px 80px;}
+  .eyebrow{
+    font-family:'JetBrains Mono',monospace;
+    font-size:11px;letter-spacing:.14em;text-transform:uppercase;
+    color:var(--coral);font-weight:700;
+  }
+  h1{
+    font-family:'Space Grotesk',sans-serif;
+    font-size:clamp(28px,4vw,42px);
+    font-weight:700;margin:6px 0 4px;letter-spacing:-.01em;
+  }
+  .sub{color:var(--text-secondary);font-size:14.5px;max-width:640px;line-height:1.5;}
+
+  header{
+    display:flex;flex-wrap:wrap;gap:20px;justify-content:space-between;align-items:flex-end;
+    padding-bottom:22px;border-bottom:1px solid var(--border);margin-bottom:26px;
+  }
+  .countdown{
+    background:var(--card);border:1px solid var(--border);border-radius:16px;
+    padding:16px 22px;text-align:right;min-width:200px;
+  }
+  .countdown .num{
+    font-family:'Space Grotesk',sans-serif;font-size:44px;font-weight:700;line-height:1;
+    background:linear-gradient(135deg,var(--coral),var(--purple));
+    -webkit-background-clip:text;background-clip:text;color:transparent;
+  }
+  .countdown .lbl{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text-tertiary);letter-spacing:.06em;margin-top:2px;}
+  .countdown .date{font-size:12px;color:var(--text-secondary);margin-top:6px;}
+
+  nav.tabs{display:flex;gap:8px;margin-bottom:24px;flex-wrap:wrap;}
+  nav.tabs button{
+    font-family:'Inter',sans-serif;font-weight:600;font-size:13.5px;
+    background:transparent;border:1px solid var(--border);color:var(--text-secondary);
+    padding:10px 18px;border-radius:999px;cursor:pointer;transition:.15s ease;
+  }
+  nav.tabs button:hover{border-color:var(--purple);color:var(--text-primary);}
+  nav.tabs button.active{background:var(--purple);border-color:var(--purple);color:#fff;}
+
+  .tabpanel{display:none;}
+  .tabpanel.active{display:block;}
+
+  .alert{
+    border:1px solid rgba(255,84,112,.4);background:var(--danger-soft);
+    border-radius:14px;padding:18px 20px;margin-bottom:22px;
+  }
+  .alert h3{margin:0 0 8px;font-size:15px;color:var(--danger);font-family:'Space Grotesk',sans-serif;}
+  .alert p{margin:10px 0 0;color:var(--text-secondary);font-size:13px;line-height:1.5;}
+  .alert.ok{border-color:rgba(61,220,132,.4);background:var(--success-soft);}
+  .alert.ok h3{color:var(--success);}
+
+  .kpi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-bottom:24px;}
+  .kpi{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:16px;}
+  .kpi .lbl{font-size:11.5px;color:var(--text-tertiary);font-family:'JetBrains Mono',monospace;text-transform:uppercase;letter-spacing:.05em;}
+  .kpi input{
+    width:100%;background:transparent;border:none;color:var(--text-primary);
+    font-family:'Space Grotesk',sans-serif;font-size:26px;font-weight:700;margin-top:4px;padding:0;
+  }
+  .kpi input:focus{outline:none;color:var(--coral);}
+  .kpi .hint{font-size:11px;color:var(--text-tertiary);margin-top:4px;}
+  .kpi .static{font-family:'Space Grotesk',sans-serif;font-size:26px;font-weight:700;margin-top:4px;}
+
+  .progress-track{height:8px;border-radius:999px;background:var(--bg-elevated);overflow:hidden;margin-top:10px;}
+  .progress-fill{height:100%;border-radius:999px;background:linear-gradient(90deg,var(--coral),var(--purple));transition:width .4s ease;}
+
+  section.block{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:22px;margin-bottom:22px;}
+  section.block h2{font-family:'Space Grotesk',sans-serif;font-size:17px;margin:0 0 4px;}
+  section.block .desc{color:var(--text-tertiary);font-size:12.5px;margin-bottom:16px;}
+
+  table.channels{width:100%;border-collapse:collapse;font-size:13px;}
+  table.channels th{
+    text-align:left;color:var(--text-tertiary);font-family:'JetBrains Mono',monospace;
+    font-size:10.5px;text-transform:uppercase;letter-spacing:.05em;padding:8px 10px;border-bottom:1px solid var(--border);
+  }
+  table.channels td{padding:8px 10px;border-bottom:1px solid var(--border);color:var(--text-secondary);}
+  table.channels tr:last-child td{border-bottom:none;}
+  table.channels input{
+    width:70px;background:var(--bg-elevated);border:1px solid var(--border);border-radius:8px;
+    color:var(--text-primary);padding:6px 8px;font-family:'JetBrains Mono',monospace;font-size:13px;
+  }
+  table.channels input:focus{outline:none;border-color:var(--purple);}
+  .conv-badge{
+    font-family:'JetBrains Mono',monospace;font-size:12px;padding:3px 9px;border-radius:999px;
+    background:var(--purple-soft);color:var(--purple);font-weight:600;
+  }
+
+  .btn-primary{
+    font-family:'Inter',sans-serif;font-weight:600;font-size:13px;
+    background:linear-gradient(135deg,var(--coral),var(--purple));
+    color:#fff;border:none;padding:10px 18px;border-radius:10px;cursor:pointer;
+  }
+  .btn-primary:hover{filter:brightness(1.08);}
+
+  .growth-form{display:flex;flex-wrap:wrap;gap:14px;align-items:end;margin-bottom:18px;}
+  .growth-form label{display:flex;flex-direction:column;gap:6px;font-size:11.5px;color:var(--text-tertiary);font-family:'JetBrains Mono',monospace;text-transform:uppercase;letter-spacing:.04em;}
+  .growth-form input{
+    background:var(--bg-elevated);border:1px solid var(--border);border-radius:8px;color:var(--text-primary);
+    padding:9px 10px;font-family:'Inter',sans-serif;font-size:13.5px;min-width:150px;
+  }
+  .growth-form input:focus{outline:none;border-color:var(--purple);}
+  .growth-chart svg{width:100%;height:auto;display:block;}
+  .growth-chart .axis-lbl{font-family:'JetBrains Mono',monospace;font-size:9px;fill:var(--text-tertiary);}
+  .growth-chart .ref-line{stroke:var(--border);stroke-dasharray:4 4;stroke-width:1;}
+  .growth-chart .ref-lbl{font-family:'JetBrains Mono',monospace;font-size:9px;fill:var(--text-tertiary);}
+  .growth-chart .pt{fill:var(--coral);stroke:var(--bg);stroke-width:1.5;}
+
+  .growth-list{margin-top:14px;max-height:260px;overflow-y:auto;}
+  .log-row{
+    display:grid;grid-template-columns:70px 70px 70px 70px auto;gap:10px;align-items:center;
+    padding:7px 8px;border-bottom:1px solid var(--border);font-size:12.5px;
+  }
+  .log-row-head{
+    font-family:'JetBrains Mono',monospace;font-size:10px;text-transform:uppercase;letter-spacing:.05em;
+    color:var(--text-tertiary);border-bottom:1px solid var(--border);
+  }
+  .log-row:last-child{border-bottom:none;}
+  .log-date{font-family:'JetBrains Mono',monospace;color:var(--text-secondary);}
+  .log-meta{font-family:'JetBrains Mono',monospace;color:var(--text-tertiary);font-size:11px;}
+  .log-total{font-family:'Space Grotesk',sans-serif;font-weight:700;color:var(--text-primary);}
+  .delta{font-family:'JetBrains Mono',monospace;font-size:11.5px;padding:2px 8px;border-radius:999px;}
+  .delta.up{background:var(--success-soft);color:var(--success);}
+  .delta.down{background:var(--danger-soft);color:var(--danger);}
+  .delta.flat{background:var(--bg-elevated);color:var(--text-tertiary);}
+  .log-del{
+    justify-self:end;background:transparent;border:1px solid var(--border);color:var(--text-tertiary);
+    width:24px;height:24px;border-radius:8px;cursor:pointer;font-size:14px;line-height:1;
+  }
+  .log-del:hover{border-color:var(--danger);color:var(--danger);}
+
+  .pace-strip{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:18px;}
+  @media (max-width:820px){.pace-strip{grid-template-columns:repeat(2,1fr);}}
+  .pace-chip{
+    background:var(--bg-elevated);border:1px solid var(--border);border-radius:12px;padding:12px 14px;
+    display:flex;flex-direction:column;gap:4px;
+  }
+  .pace-lbl{font-family:'JetBrains Mono',monospace;font-size:10px;text-transform:uppercase;letter-spacing:.05em;color:var(--text-tertiary);}
+  .pace-val{font-family:'Space Grotesk',sans-serif;font-size:20px;font-weight:700;color:var(--text-primary);}
+  .pace-val small{font-family:'Inter',sans-serif;font-size:11px;font-weight:400;color:var(--text-tertiary);margin-left:2px;}
+  .pace-status{font-size:10.5px;color:var(--text-tertiary);}
+
+  .chart-legend{display:flex;gap:16px;margin-bottom:8px;font-size:11.5px;color:var(--text-secondary);font-family:'JetBrains Mono',monospace;flex-wrap:wrap;}
+  .chart-legend .dot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:5px;vertical-align:middle;}
+  .chart-legend .diamond{
+    display:inline-block;width:8px;height:8px;margin-right:5px;vertical-align:middle;
+    background:var(--warning);transform:rotate(45deg);
+  }
+  .dot-meta{background:var(--text-tertiary);}
+  .dot-real{background:linear-gradient(135deg,var(--coral),var(--purple));}
+  .growth-chart .today-line{stroke:var(--coral);stroke-width:1.5;stroke-dasharray:3 3;}
+  .growth-chart .today-lbl{font-family:'JetBrains Mono',monospace;font-size:9px;fill:var(--coral);}
+  .growth-chart .milestone-dot{fill:var(--warning);stroke:var(--bg);stroke-width:1.5;}
+  .growth-chart .milestone-dot.start{fill:var(--text-tertiary);}
+  .growth-chart .milestone-lbl{font-family:'JetBrains Mono',monospace;font-size:9px;fill:var(--warning);font-weight:700;}
+
+  .amb-table{display:flex;flex-direction:column;gap:8px;}
+  .amb-head{
+    display:grid;grid-template-columns:1.3fr 1fr 1fr 1fr 1.1fr 32px;gap:10px;
+    font-family:'JetBrains Mono',monospace;font-size:10.5px;text-transform:uppercase;letter-spacing:.05em;
+    color:var(--text-tertiary);padding:0 4px;
+  }
+  .amb-row{
+    display:grid;grid-template-columns:1.3fr 1fr 1fr 1fr 1.1fr 32px;gap:10px;align-items:center;
+    background:var(--bg-elevated);border:1px solid var(--border);border-radius:10px;padding:8px 10px;
+  }
+  .amb-row input[type=text],.amb-row input[type=date]{
+    background:var(--card);border:1px solid var(--border);border-radius:7px;color:var(--text-primary);
+    padding:7px 9px;font-size:12.5px;font-family:'Inter',sans-serif;width:100%;
+  }
+  .amb-row input:focus{outline:none;border-color:var(--purple);}
+  .amb-check{display:flex;align-items:center;gap:6px;font-size:11.5px;color:var(--text-secondary);white-space:nowrap;}
+  .amb-check input{accent-color:var(--success);}
+  @media (max-width:900px){
+    .amb-head{display:none;}
+    .amb-row{grid-template-columns:1fr 1fr;grid-auto-rows:auto;}
+  }
+
+  /* shared select styling */
+  select{
+    background:var(--card);border:1px solid var(--border);border-radius:7px;color:var(--text-primary);
+    padding:7px 9px;font-size:12.5px;font-family:'Inter',sans-serif;
+  }
+  select:focus{outline:none;border-color:var(--purple);}
+
+  /* patrocínios */
+  .patro-card{background:var(--bg-elevated);border:1px solid var(--border);border-radius:12px;padding:12px;margin-bottom:10px;}
+  .patro-card.fechado{border-color:rgba(61,220,132,.4);}
+  .patro-row{display:grid;grid-template-columns:1.4fr 130px 130px 160px 90px 32px;gap:10px;align-items:end;margin-bottom:8px;}
+  .patro-row input[type=text]{
+    background:var(--card);border:1px solid var(--border);border-radius:7px;color:var(--text-primary);
+    padding:8px 9px;font-size:12.5px;font-family:'Inter',sans-serif;width:100%;
+  }
+  .patro-row input[type=date]{
+    background:var(--card);border:1px solid var(--border);border-radius:7px;color:var(--text-primary);
+    padding:7px 9px;font-size:11.5px;font-family:'Inter',sans-serif;width:100%;
+  }
+  .patro-row input:focus{outline:none;border-color:var(--purple);}
+  .mini-lbl{display:flex;flex-direction:column;gap:4px;font-size:10px;color:var(--text-tertiary);font-family:'JetBrains Mono',monospace;text-transform:uppercase;letter-spacing:.03em;}
+  .patro-card textarea{
+    width:100%;background:var(--card);border:1px solid var(--border);border-radius:8px;color:var(--text-primary);
+    padding:8px 10px;font-size:12.5px;font-family:'Inter',sans-serif;min-height:40px;resize:vertical;
+  }
+  .patro-card textarea:focus{outline:none;border-color:var(--purple);}
+  @media (max-width:900px){ .patro-row{grid-template-columns:1fr 1fr;} }
+
+  /* produção & documentação */
+  .prod-card{background:var(--bg-elevated);border:1px solid var(--border);border-radius:12px;padding:10px 12px;margin-bottom:8px;}
+  .prod-card.done .prod-title{text-decoration:line-through;color:var(--text-tertiary);}
+  .prod-row{display:grid;grid-template-columns:auto 1.6fr 140px 130px 1fr 32px;gap:10px;align-items:center;margin-bottom:6px;}
+  .prod-row input[type=checkbox]{width:18px;height:18px;accent-color:var(--success);cursor:pointer;}
+  .prod-row input[type=text],.prod-row input[type=date]{
+    background:var(--card);border:1px solid var(--border);border-radius:7px;color:var(--text-primary);
+    padding:7px 9px;font-size:12.5px;font-family:'Inter',sans-serif;width:100%;
+  }
+  .prod-row input:focus{outline:none;border-color:var(--purple);}
+  .prod-obs{
+    width:100%;background:var(--card);border:1px solid var(--border);border-radius:7px;color:var(--text-secondary);
+    padding:7px 9px;font-size:12px;font-family:'Inter',sans-serif;
+  }
+  .prod-obs:focus{outline:none;border-color:var(--purple);}
+  @media (max-width:900px){ .prod-row{grid-template-columns:auto 1fr;} }
+
+  /* orçamento */
+  .orc-card{background:var(--bg-elevated);border:1px solid var(--border);border-radius:12px;padding:14px;margin-bottom:12px;}
+  .orc-title{
+    font-family:'Space Grotesk',sans-serif;font-size:14.5px;font-weight:700;color:var(--text-primary);
+    display:flex;align-items:center;gap:10px;margin-bottom:10px;flex-wrap:wrap;
+  }
+  .orc-row{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:10px;}
+  @media (max-width:820px){ .orc-row{grid-template-columns:1fr;} }
+  .orc-fornecedor{
+    display:flex;flex-direction:column;gap:6px;background:var(--card);border:1px solid var(--border);
+    border-radius:9px;padding:8px;
+  }
+  .orc-fornecedor.melhor{border-color:rgba(61,220,132,.5);background:var(--success-soft);}
+  .orc-fornecedor input[type=text],.orc-fornecedor input[type=number]{
+    background:var(--bg-elevated);border:1px solid var(--border);border-radius:7px;color:var(--text-primary);
+    padding:7px 9px;font-size:12.5px;font-family:'Inter',sans-serif;width:100%;
+  }
+  .orc-fornecedor input:focus{outline:none;border-color:var(--purple);}
+  .orc-footer{display:flex;gap:14px;align-items:end;flex-wrap:wrap;}
+  .orc-footer input[type=text]{
+    flex:1;min-width:180px;background:var(--card);border:1px solid var(--border);border-radius:7px;color:var(--text-primary);
+    padding:8px 9px;font-size:12.5px;font-family:'Inter',sans-serif;
+  }
+  .orc-footer input:focus{outline:none;border-color:var(--purple);}
+
+  .timeline{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;}
+  @media (max-width:820px){.timeline{grid-template-columns:1fr;}}
+  .phase{border:1px solid var(--border);border-radius:14px;padding:18px;position:relative;background:var(--bg-elevated);}
+  .phase.current{border-color:var(--coral);box-shadow:0 0 0 1px var(--coral) inset;}
+  .phase .tag{
+    font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.06em;text-transform:uppercase;
+    padding:3px 9px;border-radius:999px;display:inline-block;margin-bottom:10px;font-weight:700;
+  }
+  .phase .tag.atual{background:var(--coral-soft);color:var(--coral);}
+  .phase .tag.concluida{background:var(--success-soft);color:var(--success);}
+  .phase .tag.proxima{background:var(--bg);color:var(--text-tertiary);border:1px solid var(--border);}
+  .phase h3{font-family:'Space Grotesk',sans-serif;font-size:16px;margin:0 0 4px;}
+  .phase .dates{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text-tertiary);margin-bottom:10px;}
+  .phase .goal{font-size:24px;font-weight:700;font-family:'Space Grotesk',sans-serif;color:var(--text-primary);}
+  .phase .goal span{font-size:12px;color:var(--text-tertiary);font-weight:400;font-family:'Inter',sans-serif;display:block;margin-top:2px;}
+  .phase ul{margin:12px 0 0;padding-left:16px;font-size:12px;color:var(--text-secondary);line-height:1.6;}
+
+  .cl-controls{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:18px;align-items:center;justify-content:space-between;}
+  .filter-group{display:flex;gap:6px;flex-wrap:wrap;}
+  .filter-group button{
+    font-family:'JetBrains Mono',monospace;font-size:11px;background:var(--bg-elevated);
+    border:1px solid var(--border);color:var(--text-secondary);padding:6px 12px;border-radius:8px;cursor:pointer;
+  }
+  .filter-group button.active{background:var(--purple);border-color:var(--purple);color:#fff;}
+  .overall-progress{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--text-tertiary);}
+  .overall-progress b{color:var(--text-primary);}
+
+  .cl-section{margin-bottom:22px;}
+  .cl-section-head{
+    display:flex;justify-content:space-between;align-items:center;
+    padding:8px 2px;border-bottom:1px solid var(--border);margin-bottom:8px;
+  }
+  .cl-section-head h4{font-family:'Space Grotesk',sans-serif;font-size:14.5px;margin:0;color:var(--text-primary);}
+  .cl-section-head .count{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text-tertiary);}
+
+  .cl-subhead{display:flex;justify-content:space-between;align-items:center;margin:14px 0 4px;padding:4px 8px;}
+  .cl-subhead span:first-child{
+    font-family:'JetBrains Mono',monospace;font-size:10.5px;text-transform:uppercase;letter-spacing:.06em;
+    color:var(--purple);font-weight:700;
+  }
+  .cl-subhead .count{font-family:'JetBrains Mono',monospace;font-size:10.5px;color:var(--text-tertiary);}
+
+  .item{display:grid;grid-template-columns:auto 1fr auto auto auto;gap:12px;align-items:center;padding:10px 8px;border-radius:10px;transition:.15s ease;}
+  .item:hover{background:var(--card-hover);}
+  .item.done .title{text-decoration:line-through;color:var(--text-tertiary);}
+  .item input[type=checkbox]{width:18px;height:18px;accent-color:var(--success);cursor:pointer;}
+  .item .title{font-size:13.5px;color:var(--text-primary);}
+  .item .date{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text-tertiary);white-space:nowrap;}
+  .item .prio{
+    font-family:'JetBrains Mono',monospace;font-size:10px;text-transform:uppercase;letter-spacing:.04em;
+    padding:3px 9px;border-radius:999px;font-weight:700;white-space:nowrap;
+  }
+  .prio.alta{background:var(--danger-soft);color:var(--danger);}
+  .prio.media{background:var(--warning-soft);color:var(--warning);}
+  .prio.baixa{background:var(--success-soft);color:var(--success);}
+  .item .resp input{
+    width:130px;background:var(--bg-elevated);border:1px solid var(--border);border-radius:8px;
+    color:var(--text-secondary);padding:6px 8px;font-size:11.5px;font-family:'Inter',sans-serif;
+  }
+  .item .resp input:focus{outline:none;border-color:var(--purple);color:var(--text-primary);}
+  @media (max-width:720px){
+    .item{grid-template-columns:auto 1fr;grid-template-areas:"cb title" "cb meta";}
+    .item input[type=checkbox]{grid-area:cb;}
+    .item .title{grid-area:title;}
+    .item .date,.item .prio,.item .resp{grid-area:meta;display:inline-block;margin-right:8px;}
+  }
+
+  footer{margin-top:30px;color:var(--text-tertiary);font-size:11.5px;font-family:'JetBrains Mono',monospace;display:flex;justify-content:space-between;flex-wrap:wrap;gap:10px;align-items:center;}
+  .save-msg{color:var(--success);opacity:0;transition:opacity .3s;}
+  .save-msg.show{opacity:1;}
+  .save-msg.err{color:var(--danger);}
+  .rt-status{font-size:11px;}
+  .backup-actions{display:flex;gap:8px;margin-left:auto;}
+  .btn-ghost{
+    font-family:'JetBrains Mono',monospace;font-size:10.5px;background:transparent;
+    border:1px solid var(--border);color:var(--text-secondary);padding:6px 12px;border-radius:8px;cursor:pointer;
+  }
+  .btn-ghost:hover{border-color:var(--purple);color:var(--text-primary);}
+  .loading{padding:60px 20px;text-align:center;color:var(--text-tertiary);font-family:'JetBrains Mono',monospace;font-size:13px;}
+</style>
+</head>
+<body>
+<div class="wrap" id="app">
+  <div class="loading" id="loading">Conectando ao Supabase...</div>
+</div>
+
+<script>
+/* ================================================================
+   CONFIGURAÇÃO — troque pelos dados do SEU projeto Supabase
+   (Supabase Dashboard > Project Settings > API)
+   ================================================================ */
+const SUPABASE_URL = 'https://YOUR-PROJECT-REF.supabase.co';
+const SUPABASE_ANON_KEY = 'YOUR-ANON-PUBLIC-KEY';
+/* ================================================================ */
+
+const sb = (SUPABASE_URL.includes('YOUR-PROJECT') || SUPABASE_ANON_KEY.includes('YOUR-ANON'))
+  ? null
+  : window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+const START_DATE = new Date('2026-07-09T00:00:00');
+const EVENT_DATE = new Date('2026-08-23T06:00:00');
+const START_INSCRITOS = 100;
+const FINAL_TARGET = 450;
+
+function daysBetween(a,b){ return Math.round((b - a) / 86400000); }
+function totalPlanDays(){ return daysBetween(START_DATE, EVENT_DATE); }
+function parseYMD(str){ return new Date(str + 'T00:00:00'); }
+
+const PHASES = [
+  {id:'f1', label:'Fase 1', range:['2026-07-09','2026-07-16'], from:100, to:180, goals:['Ativar base atual de inscritos','Fechar 1º patrocinador','Selecionar 30 embaixadores']},
+  {id:'f2', label:'Fase 2', range:['2026-07-16','2026-07-31'], from:180, to:280, goals:['4 ativações presenciais (esquentas)','Fechar 2º patrocinador','Embaixadores publicando']},
+  {id:'f3', label:'Fase 3', range:['2026-08-01','2026-08-15'], from:280, to:370, goals:['Mídia paga no ar','Conteúdo diário','Disparos WhatsApp/e-mail']},
+  {id:'f4', label:'Fase 4', range:['2026-08-16','2026-08-23'], from:370, to:450, goals:['Comunicação de urgência','Último ciclo de mobilização','Otimização diária']},
+];
+
+const SECTIONS = [
+  {id:'f1', label:'Fase 1 · 09/07 a 16/07'},
+  {id:'f2', label:'Fase 2 · 16/07 a 31/07'},
+  {id:'f3', label:'Fase 3 · 01/08 a 15/08'},
+  {id:'f4', label:'Fase 4 · 16/08 a 23/08'},
+];
+
+const MILESTONES = [
+  {date: START_DATE, value: START_INSCRITOS},
+  ...PHASES.map(p => ({date: parseYMD(p.range[1]), value: p.to}))
+];
+
+function expectedCumulative(dateObj){
+  const days = daysBetween(START_DATE, dateObj);
+  for(let i=0;i<MILESTONES.length-1;i++){
+    const d0 = daysBetween(START_DATE, MILESTONES[i].date);
+    const d1 = daysBetween(START_DATE, MILESTONES[i+1].date);
+    if(days <= d1 || i === MILESTONES.length-2){
+      const clamped = Math.max(d0, Math.min(days, d1));
+      const t = d1===d0 ? 1 : (clamped-d0)/(d1-d0);
+      return MILESTONES[i].value + t*(MILESTONES[i+1].value - MILESTONES[i].value);
+    }
+  }
+  return MILESTONES[MILESTONES.length-1].value;
+}
+
+function phaseDailyRate(phaseId){
+  const p = PHASES.find(x=>x.id===phaseId);
+  if(!p) return (FINAL_TARGET-START_INSCRITOS)/totalPlanDays();
+  const days = daysBetween(parseYMD(p.range[0]), parseYMD(p.range[1]));
+  return (p.to - p.from) / days;
+}
+
+const GROUPS = [
+  {id:'divulgacao', label:'Itens de divulgação'},
+  {id:'operacional', label:'Itens operacionais'},
+];
+
+const ITEMS = [
+  // FASE 1 — divulgação
+  {id:'f1-1',section:'f1',group:'divulgacao',title:'Extrair lista dos 100 inscritos atuais e contatar individualmente',date:'10/07',prio:'alta'},
+  {id:'f1-2',section:'f1',group:'divulgacao',title:'Criar arte de Stories para compartilhamento dos inscritos',date:'10/07',prio:'media'},
+  {id:'f1-3',section:'f1',group:'divulgacao',title:'Revisar influenciadores acionados e reforçar quem não publicou',date:'11/07',prio:'media'},
+  {id:'f1-4',section:'f1',group:'divulgacao',title:'Republicar conteúdos já produzidos pelos influenciadores',date:'12/07',prio:'baixa'},
+  {id:'f1-5',section:'f1',group:'divulgacao',title:'Produzir conteúdo de conversão: troféu, medalha, kit, percurso, benefícios',date:'12/07',prio:'media'},
+  {id:'f1-6',section:'f1',group:'divulgacao',title:'Reforçar parceiros e revisar oportunidades de e-mail marketing',date:'13/07',prio:'media'},
+  {id:'f1-7',section:'f1',group:'divulgacao',title:'Reforçar assessorias esportivas e identificar atletas influentes',date:'13/07',prio:'media'},
+  {id:'f1-8',section:'f1',group:'divulgacao',title:'Selecionar cerca de 30 embaixadores e formalizar convites',date:'14/07',prio:'alta'},
+  {id:'f1-9',section:'f1',group:'divulgacao',title:'Confirmar embaixadora Ilana (Garotos que Correm)',date:'10/07',prio:'media'},
+  {id:'f1-10',section:'f1',group:'divulgacao',title:'Mapear academias de Parnaíba e liberar cupons exclusivos',date:'14/07',prio:'media'},
+  {id:'f1-11',section:'f1',group:'divulgacao',title:'Criar competição entre academias e definir premiação',date:'15/07',prio:'media'},
+  {id:'f1-12',section:'f1',group:'divulgacao',title:'Confirmar com Jair a equipe de beach tennis patrocinada e acionar atletas',date:'11/07',prio:'baixa'},
+  {id:'f1-13',section:'f1',group:'divulgacao',title:'Fechar o 1º patrocinador oficial',date:'16/07',prio:'alta'},
+
+  // FASE 1 — operacional
+  {id:'u1',section:'f1',group:'operacional',title:'Prazos TF (abertura no app, camisetas, logos, arte) finalizados. Confirmar registro formal com a TF',date:'09/07',prio:'baixa'},
+  {id:'u13',section:'f1',group:'operacional',title:'Acompanhar chegada dos kits (camisetas + gym bags) e liberar cronograma de distribuição',date:'a confirmar',prio:'alta'},
+  {id:'u2',section:'f1',group:'operacional',title:'Validar trajeto aprovado e configurações da prova junto à TF',date:'10/07',prio:'alta'},
+  {id:'u3',section:'f1',group:'operacional',title:'Confirmar ausência de pendências na plataforma TFSports/Deskfy',date:'10/07',prio:'alta'},
+  {id:'u4',section:'f1',group:'operacional',title:'Revisar orçamentos ponto a ponto (Fabiano x Maurício), recalculando itens que escalam com o público de 450',date:'10/07',prio:'alta'},
+  {id:'u5',section:'f1',group:'operacional',title:'Fechar orçamento, fornecedor e modelo final de troféus e medalhas',date:'10/07',prio:'alta'},
+  {id:'u6',section:'f1',group:'operacional',title:'Decidir sobre troféus PCD e 60+ (110 unidades em revisão)',date:'10/07',prio:'alta'},
+  {id:'u7',section:'f1',group:'operacional',title:'Confirmar ponto exato de largada/chegada na Av. Portinho e alinhar com planta do evento e alvará',date:'10/07',prio:'alta'},
+  {id:'u8',section:'f1',group:'operacional',title:'Solicitar aos produtores locais: levantamento, orçamento e 2-3 fornecedores por categoria',date:'10/07',prio:'alta'},
+  {id:'u9',section:'f1',group:'operacional',title:'Consolidar planilha mestre comparativa de fornecedores',date:'12/07',prio:'alta'},
+  {id:'u10',section:'f1',group:'operacional',title:'Estruturar cupons de desconto por canal, rastreáveis por origem',date:'10/07',prio:'alta'},
+  {id:'u11',section:'f1',group:'operacional',title:'Criar cupom exclusivo e arte de divulgação para corretores',date:'09/07',prio:'alta'},
+  {id:'u12',section:'f1',group:'operacional',title:'Distribuir material e iniciar captação via corretores',date:'10/07',prio:'alta'},
+  {id:'g-1',section:'f1',group:'operacional',title:'Reunião semanal de acompanhamento de indicadores',date:'toda sexta',prio:'alta'},
+  {id:'g-2',section:'f1',group:'operacional',title:'Atualizar este painel diariamente',date:'diário',prio:'alta'},
+  {id:'g-3',section:'f1',group:'operacional',title:'Criar calendário único de comunicação (marketing, imprensa, redes, mídia paga, parceiros, embaixadores)',date:'14/07',prio:'media'},
+  {id:'g-7',section:'f1',group:'operacional',title:'Definir formato de premiação 2027 (todas as categorias x sorteio)',date:'a definir',prio:'media'},
+
+  // FASE 2 — divulgação
+  {id:'f2-1',section:'f2',group:'divulgacao',title:'Planejar e executar ativação no Aeroporto',date:'18/07',prio:'media'},
+  {id:'f2-2',section:'f2',group:'divulgacao',title:'Planejar e executar ativação na Praça do Trem',date:'21/07',prio:'media'},
+  {id:'f2-3',section:'f2',group:'divulgacao',title:'Planejar e executar ativação na Av. São Sebastião / loja TF',date:'24/07',prio:'media'},
+  {id:'f2-4',section:'f2',group:'divulgacao',title:'Planejar e executar ativação em academia de grande fluxo',date:'27/07',prio:'media'},
+  {id:'f2-5',section:'f2',group:'divulgacao',title:'Iniciar oficialmente a competição entre academias e divulgar ranking',date:'16/07',prio:'media'},
+  {id:'f2-6',section:'f2',group:'divulgacao',title:'Criar dashboard público de academias (ranking, evolução semanal)',date:'20/07',prio:'baixa'},
+  {id:'f2-7',section:'f2',group:'divulgacao',title:'Gravar briefing e conteúdos dos 30 embaixadores',date:'16/07',prio:'alta'},
+  {id:'f2-8',section:'f2',group:'divulgacao',title:'Embaixadores publicam Reels: convite, inscrição, cupom',date:'16 a 31/07',prio:'media'},
+  {id:'f2-9',section:'f2',group:'divulgacao',title:'Fechar o 2º patrocinador oficial',date:'31/07',prio:'alta'},
+
+  // FASE 3 — divulgação
+  {id:'f3-1',section:'f3',group:'divulgacao',title:'Montar calendário diário de conteúdo até o evento',date:'01/08',prio:'media'},
+  {id:'f3-2',section:'f3',group:'divulgacao',title:'Integrar narrativa com o lançamento do Bairro Planejado',date:'03/08',prio:'baixa'},
+  {id:'f3-3',section:'f3',group:'divulgacao',title:'Planejar campanhas de mídia paga (kit, percurso, medalha, últimas vagas)',date:'05/08',prio:'alta'},
+  {id:'f3-4',section:'f3',group:'divulgacao',title:'Rodar mídia paga',date:'10 a 23/08',prio:'alta'},
+  {id:'f3-5',section:'f3',group:'divulgacao',title:'Criar e executar cronograma de disparos WhatsApp e e-mail',date:'05/08',prio:'media'},
+  {id:'f3-6',section:'f3',group:'divulgacao',title:'Projetar e acompanhar metas por canal semanalmente',date:'01/08',prio:'alta'},
+
+  // FASE 3 — operacional
+  {id:'g-4',section:'f3',group:'operacional',title:'Providenciar documentos obrigatórios: PERMIT, ECAD, planta, RRT/ART, alvará',date:'01/08',prio:'alta'},
+  {id:'g-5',section:'f3',group:'operacional',title:'Contratar seguro atleta via TFSports',date:'01/08',prio:'media'},
+
+  // FASE 4 — divulgação
+  {id:'f4-1',section:'f4',group:'divulgacao',title:'Produzir comunicação de urgência: últimas vagas, contagem regressiva',date:'16/08',prio:'alta'},
+  {id:'f4-2',section:'f4',group:'divulgacao',title:'Publicar bastidores de montagem e entrega de kits',date:'18/08',prio:'media'},
+  {id:'f4-3',section:'f4',group:'divulgacao',title:'Último ciclo de mobilização de todos os canais',date:'16/08',prio:'alta'},
+  {id:'f4-4',section:'f4',group:'divulgacao',title:'Reforçar mídia paga, WhatsApp e e-mail na reta final',date:'16/08',prio:'alta'},
+  {id:'f4-5',section:'f4',group:'divulgacao',title:'Monitorar diariamente e otimizar investimento se necessário',date:'16 a 22/08',prio:'alta'},
+
+  // FASE 4 — operacional
+  {id:'g-6',section:'f4',group:'operacional',title:'Validar itens obrigatórios TF no dia do evento (arena, dispersão, comunicação, cronometragem)',date:'20/08',prio:'alta'},
+];
+
+let state = {
+  checklist: {},
+  dailyLog: [],
+  embaixadores: [],
+  dashboard: { patrocinadores:0, esquentas:0, canais: [] },
+  patrocinios: [],
+  producaoChecklist: [],
+  orcamentoCotacoes: {}
+};
+let activeTab = 'dashboard';
+let filterPrio = 'todas';
+let filterStatus = 'todos';
+let filterGroup = 'todos';
+let filterProdCat = 'todos';
+let filterProdStatus = 'todos';
+let realtimeStatus = 'conectando';
+
+function getCurrentInscritos(){
+  if(!state.dailyLog.length) return START_INSCRITOS;
+  const sorted = [...state.dailyLog].sort((a,b)=>a.date.localeCompare(b.date));
+  return sorted[sorted.length-1].total;
+}
+
+function currentPhase(){
+  const now = new Date();
+  for(const p of PHASES){
+    const start = new Date(p.range[0]+'T00:00:00');
+    const end = new Date(p.range[1]+'T23:59:59');
+    if(now >= start && now <= end) return p.id;
+  }
+  if(now < new Date(PHASES[0].range[0]+'T00:00:00')) return PHASES[0].id;
+  if(now > EVENT_DATE) return 'done';
+  return PHASES[PHASES.length-1].id;
+}
+
+function debounce(fn, ms){
+  let t;
+  return (...args)=>{ clearTimeout(t); t = setTimeout(()=>fn(...args), ms); };
+}
+
+/* ---------------- Supabase: leitura ---------------- */
+
+async function fetchAll(){
+  const [cl, dl, amb, ch, dm, patro, prod, orc] = await Promise.all([
+    sb.from('checklist_state').select('*'),
+    sb.from('daily_log').select('*').order('date', {ascending:true}),
+    sb.from('embaixadores').select('*').order('updated_at', {ascending:true}),
+    sb.from('channels').select('*'),
+    sb.from('dashboard_metrics').select('*').eq('id',1).single(),
+    sb.from('patrocinios').select('*').order('updated_at', {ascending:true}),
+    sb.from('producao_checklist').select('*').order('updated_at', {ascending:true}),
+    sb.from('orcamento_cotacoes').select('*'),
+  ]);
+  if(cl.error) throw cl.error;
+  if(dl.error) throw dl.error;
+  if(amb.error) throw amb.error;
+  if(ch.error) throw ch.error;
+  if(dm.error) throw dm.error;
+  if(patro.error) throw patro.error;
+  if(prod.error) throw prod.error;
+  if(orc.error) throw orc.error;
+
+  const checklistMap = {};
+  ITEMS.forEach(it => checklistMap[it.id] = {done:false, responsavel:''});
+  (cl.data||[]).forEach(row => { checklistMap[row.id] = {done: !!row.done, responsavel: row.responsavel || ''}; });
+
+  state.checklist = checklistMap;
+  state.dailyLog = (dl.data||[]).map(r => ({date: r.date, total: r.total}));
+  state.embaixadores = (amb.data||[]).map(r => ({id:r.id, nome:r.nome||'', handle:r.handle||'', cupom:r.cupom||'', reels:!!r.reels, dataPub:r.data_pub||''}));
+  state.dashboard.canais = (ch.data||[]).map(r => ({nome:r.nome, meta:r.meta||0, resultado:r.resultado||0}));
+  state.dashboard.patrocinadores = dm.data ? (dm.data.patrocinadores||0) : 0;
+  state.dashboard.esquentas = dm.data ? (dm.data.esquentas||0) : 0;
+
+  state.patrocinios = (patro.data||[]).map(r => ({
+    id:r.id, empresa:r.empresa||'', dataPrimeiroContato:r.data_primeiro_contato||'', dataUltimoContato:r.data_ultimo_contato||'',
+    status:r.status||'Prospecção', fechado:!!r.fechado, observacoes:r.observacoes||''
+  }));
+
+  state.producaoChecklist = (prod.data||[]).map(r => ({
+    id:r.id, titulo:r.titulo||'', categoria:r.categoria||'producao', prazo:r.prazo||'',
+    responsavel:r.responsavel||'', done:!!r.done, observacoes:r.observacoes||''
+  }));
+
+  const orcMap = {};
+  (orc.data||[]).forEach(r => {
+    orcMap[r.item_id] = {
+      fornecedor1:r.fornecedor1||'', valor1:r.valor1, fornecedor2:r.fornecedor2||'', valor2:r.valor2,
+      fornecedor3:r.fornecedor3||'', valor3:r.valor3, escolhido:r.escolhido||null, observacoes:r.observacoes||''
+    };
+  });
+  state.orcamentoCotacoes = orcMap;
+}
+
+/* ---------------- Supabase: escrita ---------------- */
+
+async function toggleChecklist(id, done){
+  const resp = (state.checklist[id] && state.checklist[id].responsavel) || '';
+  const {error} = await sb.from('checklist_state').upsert({id, done, responsavel:resp, updated_at:new Date().toISOString()});
+  if(error){ flashStatus('Erro ao salvar', true); return; }
+  await fetchAll(); render(); flashStatus('Salvo');
+}
+
+async function updateResponsavel(id, value){
+  const done = (state.checklist[id] && state.checklist[id].done) || false;
+  const {error} = await sb.from('checklist_state').upsert({id, done, responsavel:value, updated_at:new Date().toISOString()});
+  if(error){ flashStatus('Erro ao salvar', true); return; }
+  await fetchAll(); render(); flashStatus('Salvo');
+}
+
+async function upsertDailyLog(date, total){
+  const {error} = await sb.from('daily_log').upsert({date, total, updated_at:new Date().toISOString()});
+  if(error){ flashStatus('Erro ao salvar', true); return; }
+  await fetchAll(); render(); flashStatus('Salvo');
+}
+
+async function deleteDailyLog(date){
+  const {error} = await sb.from('daily_log').delete().eq('date', date);
+  if(error){ flashStatus('Erro ao remover', true); return; }
+  await fetchAll(); render(); flashStatus('Removido');
+}
+
+async function addEmbaixador(){
+  const id = 'amb-'+Date.now()+'-'+Math.random().toString(36).slice(2,6);
+  const {error} = await sb.from('embaixadores').insert({id, nome:'', handle:'', cupom:'', reels:false, data_pub:null});
+  if(error){ flashStatus('Erro ao adicionar', true); return; }
+  await fetchAll(); render(); flashStatus('Salvo');
+}
+
+async function updateEmbaixadorField(id, field, value){
+  const dbField = field === 'dataPub' ? 'data_pub' : field;
+  const payload = {}; payload[dbField] = (field==='dataPub' && value==='') ? null : value;
+  payload.updated_at = new Date().toISOString();
+  const {error} = await sb.from('embaixadores').update(payload).eq('id', id);
+  if(error){ flashStatus('Erro ao salvar', true); return; }
+  await fetchAll(); render(); flashStatus('Salvo');
+}
+
+async function deleteEmbaixador(id){
+  const {error} = await sb.from('embaixadores').delete().eq('id', id);
+  if(error){ flashStatus('Erro ao remover', true); return; }
+  await fetchAll(); render(); flashStatus('Removido');
+}
+
+async function updateChannel(nome, field, value){
+  const payload = {updated_at:new Date().toISOString()}; payload[field] = value;
+  const {error} = await sb.from('channels').update(payload).eq('nome', nome);
+  if(error){ flashStatus('Erro ao salvar', true); return; }
+  await fetchAll(); render(); flashStatus('Salvo');
+}
+
+async function updateDashboardMetric(field, value){
+  const payload = {updated_at:new Date().toISOString()}; payload[field] = value;
+  const {error} = await sb.from('dashboard_metrics').update(payload).eq('id', 1);
+  if(error){ flashStatus('Erro ao salvar', true); return; }
+  await fetchAll(); render(); flashStatus('Salvo');
+}
+
+/* ---------------- Patrocínios ---------------- */
+
+async function addPatrocinio(){
+  const id = 'patro-'+Date.now()+'-'+Math.random().toString(36).slice(2,6);
+  const {error} = await sb.from('patrocinios').insert({id, empresa:'', status:'Prospecção', fechado:false, observacoes:''});
+  if(error){ flashStatus('Erro ao adicionar', true); return; }
+  await fetchAll(); render(); flashStatus('Salvo');
+}
+
+async function updatePatrocinioField(id, field, value){
+  const fieldMap = {dataPrimeiroContato:'data_primeiro_contato', dataUltimoContato:'data_ultimo_contato'};
+  const dbField = fieldMap[field] || field;
+  const payload = {}; payload[dbField] = (dbField.startsWith('data_') && value==='') ? null : value;
+  payload.updated_at = new Date().toISOString();
+  const {error} = await sb.from('patrocinios').update(payload).eq('id', id);
+  if(error){ flashStatus('Erro ao salvar', true); return; }
+  await fetchAll(); render(); flashStatus('Salvo');
+}
+
+async function deletePatrocinio(id){
+  const {error} = await sb.from('patrocinios').delete().eq('id', id);
+  if(error){ flashStatus('Erro ao remover', true); return; }
+  await fetchAll(); render(); flashStatus('Removido');
+}
+
+/* ---------------- Produção & Documentação ---------------- */
+
+async function addProducaoItem(categoria){
+  const id = 'prod-'+Date.now()+'-'+Math.random().toString(36).slice(2,6);
+  const {error} = await sb.from('producao_checklist').insert({id, titulo:'', categoria: categoria || 'producao', responsavel:'', done:false, observacoes:''});
+  if(error){ flashStatus('Erro ao adicionar', true); return; }
+  await fetchAll(); render(); flashStatus('Salvo');
+}
+
+async function updateProducaoField(id, field, value){
+  const payload = {}; payload[field] = (field==='prazo' && value==='') ? null : value;
+  payload.updated_at = new Date().toISOString();
+  const {error} = await sb.from('producao_checklist').update(payload).eq('id', id);
+  if(error){ flashStatus('Erro ao salvar', true); return; }
+  await fetchAll(); render(); flashStatus('Salvo');
+}
+
+async function deleteProducaoItem(id){
+  const {error} = await sb.from('producao_checklist').delete().eq('id', id);
+  if(error){ flashStatus('Erro ao remover', true); return; }
+  await fetchAll(); render(); flashStatus('Removido');
+}
+
+/* ---------------- Orçamento ---------------- */
+
+async function updateOrcamentoField(itemId, field, value){
+  const current = state.orcamentoCotacoes[itemId] || {fornecedor1:'',valor1:null,fornecedor2:'',valor2:null,fornecedor3:'',valor3:null,escolhido:null,observacoes:''};
+  const payload = {
+    item_id: itemId,
+    fornecedor1: current.fornecedor1, valor1: current.valor1,
+    fornecedor2: current.fornecedor2, valor2: current.valor2,
+    fornecedor3: current.fornecedor3, valor3: current.valor3,
+    escolhido: current.escolhido,
+    observacoes: current.observacoes,
+    updated_at: new Date().toISOString()
+  };
+  payload[field] = value === '' ? null : value;
+  const {error} = await sb.from('orcamento_cotacoes').upsert(payload);
+  if(error){ flashStatus('Erro ao salvar', true); return; }
+  await fetchAll(); render(); flashStatus('Salvo');
+}
+
+/* ---------------- Realtime ---------------- */
+
+function subscribeRealtime(){
+  const refresh = debounce(async ()=>{ await fetchAll(); render(); }, 250);
+  sb.channel('tracker-changes')
+    .on('postgres_changes', {event:'*', schema:'public', table:'checklist_state'}, refresh)
+    .on('postgres_changes', {event:'*', schema:'public', table:'daily_log'}, refresh)
+    .on('postgres_changes', {event:'*', schema:'public', table:'embaixadores'}, refresh)
+    .on('postgres_changes', {event:'*', schema:'public', table:'channels'}, refresh)
+    .on('postgres_changes', {event:'*', schema:'public', table:'dashboard_metrics'}, refresh)
+    .on('postgres_changes', {event:'*', schema:'public', table:'patrocinios'}, refresh)
+    .on('postgres_changes', {event:'*', schema:'public', table:'producao_checklist'}, refresh)
+    .on('postgres_changes', {event:'*', schema:'public', table:'orcamento_cotacoes'}, refresh)
+    .subscribe((status)=>{
+      realtimeStatus = status === 'SUBSCRIBED' ? 'ao vivo' : (status === 'CLOSED' || status === 'CHANNEL_ERROR' ? 'offline' : 'conectando');
+      render();
+    });
+}
+
+/* ---------------- Backup manual ---------------- */
+
+function exportData(){
+  const blob = new Blob([JSON.stringify(state, null, 2)], {type:'application/json'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  const stamp = new Date().toISOString().slice(0,10);
+  a.href = url; a.download = `conviver-run-backup-${stamp}.json`;
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+async function importData(file){
+  const reader = new FileReader();
+  reader.onload = async () => {
+    try{
+      const parsed = JSON.parse(reader.result);
+      if(!parsed || !parsed.checklist){ alert('Arquivo inválido: não parece ser um backup deste painel.'); return; }
+      const ops = [];
+      Object.entries(parsed.checklist).forEach(([id,val])=>{
+        ops.push(sb.from('checklist_state').upsert({id, done:!!val.done, responsavel:val.responsavel||'', updated_at:new Date().toISOString()}));
+      });
+      (parsed.dailyLog||[]).forEach(e=>{
+        ops.push(sb.from('daily_log').upsert({date:e.date, total:e.total, updated_at:new Date().toISOString()}));
+      });
+      (parsed.embaixadores||[]).forEach(a=>{
+        ops.push(sb.from('embaixadores').upsert({id:a.id, nome:a.nome||'', handle:a.handle||'', cupom:a.cupom||'', reels:!!a.reels, data_pub:a.dataPub||null, updated_at:new Date().toISOString()}));
+      });
+      if(parsed.dashboard){
+        (parsed.dashboard.canais||[]).forEach(c=>{
+          ops.push(sb.from('channels').upsert({nome:c.nome, meta:c.meta||0, resultado:c.resultado||0, updated_at:new Date().toISOString()}));
+        });
+        ops.push(sb.from('dashboard_metrics').update({patrocinadores:parsed.dashboard.patrocinadores||0, esquentas:parsed.dashboard.esquentas||0, updated_at:new Date().toISOString()}).eq('id',1));
+      }
+      await Promise.all(ops);
+      await fetchAll();
+      render();
+      alert('Backup importado com sucesso.');
+    }catch(e){
+      alert('Não consegui importar esse arquivo. Confira se é um .json exportado daqui.');
+    }
+  };
+  reader.readAsText(file);
+}
+
+/* ---------------- UI feedback ---------------- */
+
+function flashStatus(text, isError){
+  const el = document.getElementById('saveMsg');
+  if(!el) return;
+  el.textContent = text;
+  el.classList.remove('show','err');
+  void el.offsetWidth;
+  el.classList.add('show');
+  if(isError) el.classList.add('err');
+  clearTimeout(window.__saveTimer);
+  window.__saveTimer = setTimeout(()=>el.classList.remove('show'), 1500);
+}
+
+/* ---------------- Render ---------------- */
+
+function render(){
+  const app = document.getElementById('app');
+  const now = new Date();
+  const daysLeft = Math.ceil((EVENT_DATE - now) / 86400000);
+  const cPhase = currentPhase();
+  const phaseObj = PHASES.find(p=>p.id===cPhase);
+  const rtIcon = realtimeStatus==='ao vivo' ? '🟢' : realtimeStatus==='offline' ? '🔴' : '🟡';
+
+  app.innerHTML = `
+    <div class="eyebrow">Plano Emergencial · Track&amp;Field Experience Running · painel do time</div>
+    <header>
+      <div>
+        <h1>Conviver Run 2026</h1>
+        <div class="sub">Painel compartilhado em tempo real. Meta: 450 inscritos até a largada, em 23/08/2026, na Av. Portinho, Parnaíba/PI.</div>
+      </div>
+      <div class="countdown">
+        <div class="num">${daysLeft >= 0 ? daysLeft : 0}</div>
+        <div class="lbl">dias até a largada</div>
+        <div class="date">23/08/2026 · fase atual: ${phaseObj ? phaseObj.label : (cPhase==='done'?'evento realizado':'N/D')}</div>
+      </div>
+    </header>
+
+    <nav class="tabs">
+      <button data-tab="dashboard" class="${activeTab==='dashboard'?'active':''}">Dashboard</button>
+      <button data-tab="timeline" class="${activeTab==='timeline'?'active':''}">Linha do tempo</button>
+      <button data-tab="checklist" class="${activeTab==='checklist'?'active':''}">Checklist</button>
+      <button data-tab="embaixadores" class="${activeTab==='embaixadores'?'active':''}">Embaixadores</button>
+      <button data-tab="patrocinios" class="${activeTab==='patrocinios'?'active':''}">Patrocínios</button>
+      <button data-tab="producao" class="${activeTab==='producao'?'active':''}">Produção &amp; Doc.</button>
+      <button data-tab="orcamento" class="${activeTab==='orcamento'?'active':''}">Orçamento</button>
+    </nav>
+
+    <div class="tabpanel ${activeTab==='dashboard'?'active':''}">${renderDashboard(cPhase)}</div>
+    <div class="tabpanel ${activeTab==='timeline'?'active':''}">${renderTimeline(cPhase)}</div>
+    <div class="tabpanel ${activeTab==='checklist'?'active':''}">${renderChecklist()}</div>
+    <div class="tabpanel ${activeTab==='embaixadores'?'active':''}">${renderEmbaixadores()}</div>
+    <div class="tabpanel ${activeTab==='patrocinios'?'active':''}">${renderPatrocinios()}</div>
+    <div class="tabpanel ${activeTab==='producao'?'active':''}">${renderProducao()}</div>
+    <div class="tabpanel ${activeTab==='orcamento'?'active':''}">${renderOrcamento()}</div>
+
+    <footer>
+      <span id="saveMsg" class="save-msg">Salvo</span>
+      <span class="rt-status">${rtIcon} ${realtimeStatus}</span>
+      <span class="backup-actions">
+        <button id="exportBtn" class="btn-ghost">Exportar backup (.json)</button>
+        <button id="importBtn" class="btn-ghost">Importar backup</button>
+        <input type="file" id="importFile" accept="application/json" style="display:none;">
+      </span>
+    </footer>
+  `;
+
+  bindEvents();
+}
+
+function renderDashboard(cPhase){
+  const inscritos = getCurrentInscritos();
+  const dailyLogSorted = [...state.dailyLog].sort((a,b)=> a.date.localeCompare(b.date));
+  const phaseObj = PHASES.find(p=>p.id===cPhase) || PHASES[PHASES.length-1];
+  const phaseTarget = phaseObj.to;
+  const pctPhase = Math.min(100, Math.round((inscritos / phaseTarget) * 100));
+  const pctFinal = Math.min(100, Math.round((inscritos / 450) * 100));
+  const faltamFase = Math.max(0, phaseTarget - inscritos);
+  const faltamFinal = Math.max(0, 450 - inscritos);
+
+  const channelRows = state.dashboard.canais.map(c=>{
+    const conv = c.meta > 0 ? Math.round((c.resultado / c.meta) * 100) : 0;
+    return `
+      <tr>
+        <td>${c.nome}</td>
+        <td><input type="number" min="0" data-chan="${c.nome}" data-field="meta" value="${c.meta}"></td>
+        <td><input type="number" min="0" data-chan="${c.nome}" data-field="resultado" value="${c.resultado}"></td>
+        <td><span class="conv-badge">${conv}%</span></td>
+      </tr>`;
+  }).join('');
+
+  return `
+    <div class="alert ok">
+      <h3>Prazos TF regularizados</h3>
+      <p>Abertura no aplicativo, grade de camisetas, envio de logos e aprovação da arte estão concluídos junto à TF. O único pendente agora é a chegada física dos kits (camisetas + gym bags) para liberar a distribuição. Atualize a data assim que houver previsão no item "u13" do checklist.</p>
+    </div>
+
+    <div class="kpi-grid">
+      <div class="kpi">
+        <div class="lbl">Total inscritos</div>
+        <input type="number" min="0" id="inscritosInput" value="${inscritos}">
+        <div class="progress-track"><div class="progress-fill" style="width:${pctPhase}%"></div></div>
+        <div class="hint">${pctPhase}% da meta da ${phaseObj.label.toLowerCase()} (${phaseTarget})</div>
+      </div>
+      <div class="kpi">
+        <div class="lbl">Meta final (23/08)</div>
+        <div class="static">450</div>
+        <div class="progress-track"><div class="progress-fill" style="width:${pctFinal}%"></div></div>
+        <div class="hint">${pctFinal}% atingido · faltam ${faltamFinal}</div>
+      </div>
+      <div class="kpi">
+        <div class="lbl">Faltam para a fase atual</div>
+        <div class="static">${faltamFase}</div>
+        <div class="hint">${phaseObj.label}: meta ${phaseObj.from} → ${phaseObj.to}</div>
+      </div>
+      <div class="kpi">
+        <div class="lbl">Patrocinadores confirmados</div>
+        <div class="static">${state.patrocinios.filter(p=>p.fechado).length}</div>
+        <div class="hint">${state.patrocinios.length} em prospecção · meta: 2 até 31/07</div>
+      </div>
+      <div class="kpi">
+        <div class="lbl">Esquentas realizados</div>
+        <input type="number" min="0" id="esquentasInput" value="${state.dashboard.esquentas}">
+        <div class="hint">meta: 4 até 31/07</div>
+      </div>
+      <div class="kpi">
+        <div class="lbl">Embaixadores publicaram</div>
+        <div class="static">${state.embaixadores.filter(e=>e.dataPub).length}</div>
+        <div class="hint">${state.embaixadores.length} cadastrados · meta: 30</div>
+      </div>
+    </div>
+
+    <section class="block">
+      <h2>Evolução diária de inscritos</h2>
+      <div class="desc">Plano por marcos: 09/07 início com ${START_INSCRITOS} · 16/07 = 180 · 31/07 = 280 · 15/08 = 370 · 23/08 = ${FINAL_TARGET}. O ritmo exigido muda a cada fase. A meta ajustada recalcula esse ritmo todo dia com base no que falta e nos dias restantes até 23/08.</div>
+      ${renderPaceStrip()}
+      <div class="growth-form">
+        <label>Data<input type="date" id="logDateInput" value="${new Date().toISOString().slice(0,10)}"></label>
+        <label>Total de inscritos no dia<input type="number" min="0" id="logTotalInput" placeholder="ex: 142"></label>
+        <button id="logSaveBtn" class="btn-primary">Salvar atualização do dia</button>
+      </div>
+      ${renderGrowthChart(dailyLogSorted)}
+      ${renderGrowthList(dailyLogSorted)}
+    </section>
+
+    <section class="block">
+      <h2>Conversão por canal</h2>
+      <div class="desc">Atualize meta e resultado de cada canal para acompanhar a origem das inscrições.</div>
+      <table class="channels">
+        <thead><tr><th>Canal</th><th>Meta</th><th>Resultado</th><th>Conversão</th></tr></thead>
+        <tbody>${channelRows}</tbody>
+      </table>
+    </section>
+  `;
+}
+
+function renderPaceStrip(){
+  const now = new Date();
+  const cPhaseId = currentPhase();
+  const daysRemaining = Math.max(0, daysBetween(now, EVENT_DATE));
+  const current = getCurrentInscritos();
+  const expectedToday = Math.round(expectedCumulative(now));
+  const diff = current - expectedToday;
+  const adjustedDaily = daysRemaining > 0 ? (FINAL_TARGET - current) / daysRemaining : 0;
+  const statusClass = diff > 0 ? 'up' : diff < 0 ? 'down' : 'flat';
+  const statusLabel = diff > 0 ? 'à frente do plano' : diff < 0 ? 'atrás do plano' : 'em cima do plano';
+  const phaseRate = phaseDailyRate(cPhaseId === 'done' ? 'f4' : cPhaseId);
+
+  return `
+    <div class="pace-strip">
+      <div class="pace-chip">
+        <span class="pace-lbl">Ritmo exigido nesta fase</span>
+        <span class="pace-val">${phaseRate.toFixed(1)}<small>/dia</small></span>
+      </div>
+      <div class="pace-chip">
+        <span class="pace-lbl">Meta ajustada de hoje</span>
+        <span class="pace-val">${Math.ceil(adjustedDaily)}<small>/dia</small></span>
+      </div>
+      <div class="pace-chip">
+        <span class="pace-lbl">Esperado até hoje</span>
+        <span class="pace-val">${expectedToday}</span>
+      </div>
+      <div class="pace-chip">
+        <span class="pace-lbl">Realizado</span>
+        <span class="pace-val">${current}</span>
+      </div>
+      <div class="pace-chip">
+        <span class="pace-lbl">Diferença vs plano</span>
+        <span class="pace-val delta ${statusClass}" style="font-size:20px;">${diff>0?'+':''}${diff}</span>
+        <span class="pace-status">${statusLabel}</span>
+      </div>
+    </div>`;
+}
+
+function renderGrowthChart(entries){
+  const W = 760, H = 260, padL = 44, padR = 20, padT = 16, padB = 30;
+  const totalDays = totalPlanDays();
+  const targets = [180,280,370,450];
+  const maxVal = Math.max(FINAL_TARGET, ...entries.map(e=>e.total)) * 1.06;
+  const minVal = 0;
+  const xForDay = day => padL + (Math.min(day,totalDays) * (W - padL - padR) / totalDays);
+  const yFor = v => H - padB - ((v - minVal) / (maxVal - minVal)) * (H - padT - padB);
+
+  const metaPath = MILESTONES.map((m,i)=>{
+    const day = daysBetween(START_DATE, m.date);
+    return (i===0?'M':'L') + xForDay(day).toFixed(1) + ',' + yFor(m.value).toFixed(1);
+  }).join(' ');
+
+  const milestoneMarkers = MILESTONES.map((m,i)=>{
+    const day = daysBetween(START_DATE, m.date);
+    const x = xForDay(day), y = yFor(m.value);
+    const s = i===0 ? 3.5 : 5.5;
+    const dateLbl = `${String(m.date.getDate()).padStart(2,'0')}/${String(m.date.getMonth()+1).padStart(2,'0')}`;
+    const labelY = y - s - 6;
+    return `
+      <polygon points="${x.toFixed(1)},${(y-s).toFixed(1)} ${(x+s).toFixed(1)},${y.toFixed(1)} ${x.toFixed(1)},${(y+s).toFixed(1)} ${(x-s).toFixed(1)},${y.toFixed(1)}" class="milestone-dot ${i===0?'start':''}"><title>${dateLbl}: marco de ${m.value} inscritos</title></polygon>
+      <text x="${x.toFixed(1)}" y="${labelY.toFixed(1)}" text-anchor="middle" class="milestone-lbl">${dateLbl}</text>`;
+  }).join('');
+
+  const realPoints = entries.map(e => [xForDay(daysBetween(START_DATE, parseYMD(e.date))), yFor(e.total), e]);
+  const hasReal = realPoints.length >= 1;
+  const realLinePath = realPoints.map((p,i)=> (i===0?'M':'L') + p[0].toFixed(1) + ',' + p[1].toFixed(1)).join(' ');
+  const realAreaPath = realPoints.length >= 2
+    ? realLinePath + ` L${realPoints[realPoints.length-1][0].toFixed(1)},${(H-padB).toFixed(1)} L${realPoints[0][0].toFixed(1)},${(H-padB).toFixed(1)} Z`
+    : '';
+
+  const dots = realPoints.map(p=> `<circle cx="${p[0].toFixed(1)}" cy="${p[1].toFixed(1)}" r="3.5" class="pt"><title>${p[2].date.split('-').reverse().join('/')}: ${p[2].total} inscritos</title></circle>`).join('');
+
+  const now = new Date();
+  const todayDay = daysBetween(START_DATE, now);
+  const todayX = (todayDay >= 0 && todayDay <= totalDays) ? xForDay(todayDay) : null;
+
+  const xLabels = [];
+  for(let day=0; day<=totalDays; day += 5){
+    const d = new Date(START_DATE.getTime() + day*86400000);
+    xLabels.push(`<text x="${xForDay(day)}" y="${H-8}" text-anchor="middle" class="axis-lbl">${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}</text>`);
+  }
+  if(totalDays % 5 !== 0){
+    const d = EVENT_DATE;
+    xLabels.push(`<text x="${xForDay(totalDays)}" y="${H-8}" text-anchor="middle" class="axis-lbl">${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}</text>`);
+  }
+
+  const refLines = targets.map(t=>{
+    const y = yFor(t);
+    return `
+      <line x1="${padL}" y1="${y}" x2="${W-padR}" y2="${y}" class="ref-line"/>
+      <text x="${W-padR}" y="${y-4}" text-anchor="end" class="ref-lbl">${t}</text>`;
+  }).join('');
+
+  const todayMarker = todayX !== null ? `
+      <line x1="${todayX.toFixed(1)}" y1="${padT}" x2="${todayX.toFixed(1)}" y2="${H-padB}" class="today-line"/>
+      <text x="${todayX.toFixed(1)}" y="${padT-4}" text-anchor="middle" class="today-lbl">hoje</text>` : '';
+
+  return `
+    <div class="chart-legend">
+      <span><i class="dot dot-meta"></i> Meta (marcos)</span>
+      <span><i class="dot dot-real"></i> Realizado</span>
+      <span><i class="diamond"></i> Marco de fase</span>
+    </div>
+    <div class="growth-chart">
+      <svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none">
+        <defs>
+          <linearGradient id="growthFill" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#8b5cf6" stop-opacity="0.35"/>
+            <stop offset="100%" stop-color="#8b5cf6" stop-opacity="0"/>
+          </linearGradient>
+          <linearGradient id="growthLine" x1="0" y1="0" x2="1" y2="0">
+            <stop offset="0%" stop-color="#ff6b4a"/>
+            <stop offset="100%" stop-color="#8b5cf6"/>
+          </linearGradient>
+        </defs>
+        ${refLines}
+        ${todayMarker}
+        <path d="${metaPath}" fill="none" stroke="var(--text-tertiary)" stroke-width="1.5" stroke-dasharray="5 4"/>
+        ${realAreaPath ? `<path d="${realAreaPath}" fill="url(#growthFill)" stroke="none"/>` : ''}
+        ${hasReal ? `<path d="${realLinePath}" fill="none" stroke="url(#growthLine)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>` : ''}
+        ${dots}
+        ${milestoneMarkers}
+        ${xLabels.join('')}
+      </svg>
+    </div>`;
+}
+
+function renderGrowthList(entries){
+  if(!entries.length) return '';
+  const rows = [...entries].reverse().map(e=>{
+    const meta = Math.round(expectedCumulative(parseYMD(e.date)));
+    const diff = e.total - meta;
+    const diffHtml = `<span class="delta ${diff>0?'up':diff<0?'down':'flat'}">${diff>0?'+':''}${diff}</span>`;
+    return `
+      <div class="log-row">
+        <span class="log-date">${e.date.split('-').reverse().join('/')}</span>
+        <span class="log-meta">meta ${meta}</span>
+        <span class="log-total">${e.total}</span>
+        <span class="log-delta">${diffHtml}</span>
+        <button class="log-del" data-del-log="${e.date}" title="Remover">×</button>
+      </div>`;
+  }).join('');
+  return `<div class="growth-list">
+    <div class="log-row log-row-head">
+      <span>Data</span><span>Plano</span><span>Realizado</span><span>vs plano</span><span></span>
+    </div>
+    ${rows}
+  </div>`;
+}
+
+function renderEmbaixadores(){
+  const list = state.embaixadores;
+  const total = list.length;
+  const fizeramReels = list.filter(e=>e.reels).length;
+  const publicaram = list.filter(e=>e.dataPub).length;
+
+  const rows = list.map(e=>`
+    <div class="amb-row">
+      <input type="text" placeholder="Nome" data-amb="${e.id}" data-field="nome" value="${e.nome || ''}">
+      <input type="text" placeholder="@handle" data-amb="${e.id}" data-field="handle" value="${e.handle || ''}">
+      <input type="text" placeholder="Cupom" data-amb="${e.id}" data-field="cupom" value="${e.cupom || ''}">
+      <label class="amb-check"><input type="checkbox" data-amb="${e.id}" data-field="reels" ${e.reels?'checked':''}> fez o Reels</label>
+      <input type="date" data-amb="${e.id}" data-field="dataPub" value="${e.dataPub || ''}">
+      <button class="log-del" data-amb-del="${e.id}" title="Remover">×</button>
+    </div>`).join('');
+
+  return `
+    <div class="kpi-grid" style="grid-template-columns:repeat(3,1fr);margin-bottom:20px;">
+      <div class="kpi"><div class="lbl">Embaixadores cadastrados</div><div class="static">${total}</div><div class="hint">meta: 30</div></div>
+      <div class="kpi"><div class="lbl">Fizeram o Reels</div><div class="static">${fizeramReels}</div><div class="hint">${total?Math.round(fizeramReels/total*100):0}% do total</div></div>
+      <div class="kpi"><div class="lbl">Publicaram (com data)</div><div class="static">${publicaram}</div><div class="hint">${total?Math.round(publicaram/total*100):0}% do total</div></div>
+    </div>
+    <section class="block">
+      <h2>Roteiro de embaixadores</h2>
+      <div class="desc">Nome, @, cupom exclusivo, se já gravou o Reels e a data em que publicou. Editável por todo o time.</div>
+      <div class="amb-table">
+        <div class="amb-head">
+          <span>Nome</span><span>@</span><span>Cupom</span><span>Reels</span><span>Data de publicação</span><span></span>
+        </div>
+        ${rows || '<div class="desc">Nenhum embaixador cadastrado ainda.</div>'}
+      </div>
+      <button id="addAmbBtn" class="btn-primary" style="margin-top:14px;">+ Adicionar embaixador</button>
+    </section>
+  `;
+}
+
+const STATUS_PATROCINIO = ['Prospecção','Em negociação','Proposta enviada','Aguardando resposta','Recusado'];
+
+function renderPatrocinios(){
+  const list = state.patrocinios;
+  const fechados = list.filter(p=>p.fechado).length;
+
+  const statusOptions = (current) => STATUS_PATROCINIO.map(s=>`<option value="${s}" ${s===current?'selected':''}>${s}</option>`).join('');
+
+  const cards = list.map(p=>`
+    <div class="patro-card ${p.fechado?'fechado':''}">
+      <div class="patro-row">
+        <input type="text" placeholder="Empresa" data-patro="${p.id}" data-field="empresa" value="${p.empresa}">
+        <label class="mini-lbl">1º contato<input type="date" data-patro="${p.id}" data-field="dataPrimeiroContato" value="${p.dataPrimeiroContato}"></label>
+        <label class="mini-lbl">Último contato<input type="date" data-patro="${p.id}" data-field="dataUltimoContato" value="${p.dataUltimoContato}"></label>
+        <select data-patro="${p.id}" data-field="status">${statusOptions(p.status)}</select>
+        <label class="amb-check"><input type="checkbox" data-patro="${p.id}" data-field="fechado" ${p.fechado?'checked':''}> fechado</label>
+        <button class="log-del" data-patro-del="${p.id}" title="Remover">×</button>
+      </div>
+      <textarea placeholder="Observações" data-patro="${p.id}" data-field="observacoes">${p.observacoes}</textarea>
+    </div>`).join('');
+
+  return `
+    <div class="kpi-grid" style="grid-template-columns:repeat(3,1fr);margin-bottom:20px;">
+      <div class="kpi"><div class="lbl">Empresas cadastradas</div><div class="static">${list.length}</div></div>
+      <div class="kpi"><div class="lbl">Fechados</div><div class="static">${fechados}</div></div>
+      <div class="kpi"><div class="lbl">Em aberto</div><div class="static">${list.length - fechados}</div></div>
+    </div>
+    <section class="block">
+      <h2>Patrocinadores em contato</h2>
+      <div class="desc">Empresa, data do primeiro e do último contato, status da negociação, se já fechou, e observações livres.</div>
+      ${cards || '<div class="desc">Nenhum patrocinador cadastrado ainda.</div>'}
+      <button id="addPatroBtn" class="btn-primary" style="margin-top:10px;">+ Adicionar patrocinador</button>
+    </section>`;
+}
+
+function renderProducao(){
+  const list = state.producaoChecklist.filter(it=>{
+    if(filterProdCat !== 'todos' && it.categoria !== filterProdCat) return false;
+    if(filterProdStatus === 'pendente' && it.done) return false;
+    if(filterProdStatus === 'concluido' && !it.done) return false;
+    return true;
+  });
+  const total = state.producaoChecklist.length;
+  const done = state.producaoChecklist.filter(it=>it.done).length;
+  const nProducao = state.producaoChecklist.filter(it=>it.categoria==='producao').length;
+  const nDoc = state.producaoChecklist.filter(it=>it.categoria==='documentacao').length;
+
+  const cards = list.map(it=>`
+    <div class="prod-card ${it.done?'done':''}">
+      <div class="prod-row">
+        <input type="checkbox" data-prod="${it.id}" data-field="done" ${it.done?'checked':''}>
+        <input type="text" placeholder="Item" class="prod-title" data-prod="${it.id}" data-field="titulo" value="${it.titulo}">
+        <select data-prod="${it.id}" data-field="categoria">
+          <option value="producao" ${it.categoria==='producao'?'selected':''}>Produção</option>
+          <option value="documentacao" ${it.categoria==='documentacao'?'selected':''}>Documentação</option>
+        </select>
+        <input type="date" data-prod="${it.id}" data-field="prazo" value="${it.prazo}">
+        <input type="text" placeholder="Responsável" data-prod="${it.id}" data-field="responsavel" value="${it.responsavel}">
+        <button class="log-del" data-prod-del="${it.id}" title="Remover">×</button>
+      </div>
+      <input type="text" class="prod-obs" placeholder="Observações" data-prod="${it.id}" data-field="observacoes" value="${it.observacoes}">
+    </div>`).join('');
+
+  return `
+    <div class="kpi-grid" style="grid-template-columns:repeat(4,1fr);margin-bottom:20px;">
+      <div class="kpi"><div class="lbl">Itens cadastrados</div><div class="static">${total}</div></div>
+      <div class="kpi"><div class="lbl">Concluídos</div><div class="static">${done}</div></div>
+      <div class="kpi"><div class="lbl">Produção</div><div class="static">${nProducao}</div></div>
+      <div class="kpi"><div class="lbl">Documentação</div><div class="static">${nDoc}</div></div>
+    </div>
+    <section class="block">
+      <h2>Checklist de produção &amp; documentação</h2>
+      <div class="desc">Cadastre item por item. Itens marcados como "Produção" aparecem automaticamente na aba Orçamento para comparação de fornecedores.</div>
+      <div class="cl-controls">
+        <div class="filter-group">
+          <button data-prodcat="todos" class="${filterProdCat==='todos'?'active':''}">Todos</button>
+          <button data-prodcat="producao" class="${filterProdCat==='producao'?'active':''}">Produção</button>
+          <button data-prodcat="documentacao" class="${filterProdCat==='documentacao'?'active':''}">Documentação</button>
+        </div>
+        <div class="filter-group">
+          <button data-prodstatus="todos" class="${filterProdStatus==='todos'?'active':''}">Todos</button>
+          <button data-prodstatus="pendente" class="${filterProdStatus==='pendente'?'active':''}">Pendentes</button>
+          <button data-prodstatus="concluido" class="${filterProdStatus==='concluido'?'active':''}">Concluídos</button>
+        </div>
+      </div>
+      ${cards || '<div class="desc">Nenhum item para este filtro.</div>'}
+      <div class="filter-group" style="margin-top:14px;">
+        <button id="addProdItemBtn" class="btn-primary" data-cat="producao">+ Item de produção</button>
+        <button id="addDocItemBtn" class="btn-primary" data-cat="documentacao" style="background:linear-gradient(135deg,var(--purple),var(--coral));">+ Item de documentação</button>
+      </div>
+    </section>`;
+}
+
+function renderOrcamento(){
+  const items = state.producaoChecklist.filter(it=>it.categoria==='producao');
+
+  if(!items.length){
+    return `<section class="block">
+      <h2>Orçamento</h2>
+      <div class="desc">Cadastre itens de produção na aba "Produção &amp; Doc." primeiro; eles aparecem aqui automaticamente para comparar até 3 fornecedores.</div>
+    </section>`;
+  }
+
+  let totalEstimado = 0;
+  let itensComCotacao = 0;
+
+  const cards = items.map(it=>{
+    const c = state.orcamentoCotacoes[it.id] || {fornecedor1:'',valor1:null,fornecedor2:'',valor2:null,fornecedor3:'',valor3:null,escolhido:null,observacoes:''};
+    const valores = [c.valor1, c.valor2, c.valor3].map(v => (v===null||v===undefined||v==='') ? null : Number(v));
+    const validos = valores.filter(v => v!==null && !isNaN(v) && v>0);
+    if(validos.length) itensComCotacao++;
+    const menor = validos.length ? Math.min(...validos) : null;
+    const escolhidoVal = c.escolhido ? valores[c.escolhido-1] : null;
+    const valorParaTotal = (escolhidoVal!==null && !isNaN(escolhidoVal)) ? escolhidoVal : menor;
+    if(valorParaTotal) totalEstimado += valorParaTotal;
+
+    const fornecedorField = (n) => `
+      <div class="orc-fornecedor ${menor!==null && valores[n-1]===menor ? 'melhor':''}">
+        <input type="text" placeholder="Fornecedor ${n}" data-orc="${it.id}" data-field="fornecedor${n}" value="${c['fornecedor'+n]||''}">
+        <input type="number" min="0" step="0.01" placeholder="R$" data-orc="${it.id}" data-field="valor${n}" value="${c['valor'+n]===null||c['valor'+n]===undefined?'':c['valor'+n]}">
+      </div>`;
+
+    return `
+      <div class="orc-card">
+        <div class="orc-title">${it.titulo || '(sem nome)'}${menor!==null?`<span class="conv-badge">menor: R$ ${menor.toLocaleString('pt-BR')}</span>`:''}</div>
+        <div class="orc-row">
+          ${fornecedorField(1)}
+          ${fornecedorField(2)}
+          ${fornecedorField(3)}
+        </div>
+        <div class="orc-footer">
+          <label class="mini-lbl">Fornecedor escolhido
+            <select data-orc="${it.id}" data-field="escolhido">
+              <option value="" ${!c.escolhido?'selected':''}>nenhum</option>
+              <option value="1" ${c.escolhido==1?'selected':''}>Fornecedor 1</option>
+              <option value="2" ${c.escolhido==2?'selected':''}>Fornecedor 2</option>
+              <option value="3" ${c.escolhido==3?'selected':''}>Fornecedor 3</option>
+            </select>
+          </label>
+          <input type="text" placeholder="Observações" data-orc="${it.id}" data-field="observacoes" value="${c.observacoes||''}">
+        </div>
+      </div>`;
+  }).join('');
+
+  return `
+    <div class="kpi-grid" style="grid-template-columns:repeat(3,1fr);margin-bottom:20px;">
+      <div class="kpi"><div class="lbl">Itens no orçamento</div><div class="static">${items.length}</div></div>
+      <div class="kpi"><div class="lbl">Com cotação</div><div class="static">${itensComCotacao}</div><div class="hint">de ${items.length}</div></div>
+      <div class="kpi"><div class="lbl">Estimativa total</div><div class="static">R$ ${totalEstimado.toLocaleString('pt-BR')}</div><div class="hint">escolhido, senão o menor valor</div></div>
+    </div>
+    <section class="block">
+      <h2>Comparação de fornecedores</h2>
+      <div class="desc">Até 3 cotações por item. O menor valor de cada linha fica destacado. Marque o fornecedor escolhido quando decidir.</div>
+      ${cards}
+    </section>`;
+}
+
+function renderTimeline(cPhase){
+  const now = new Date();
+  const cards = PHASES.map(p=>{
+    const start = new Date(p.range[0]+'T00:00:00');
+    const end = new Date(p.range[1]+'T23:59:59');
+    let tagClass, tagLabel;
+    if(now > end){ tagClass='concluida'; tagLabel='Concluída'; }
+    else if(now >= start && now <= end){ tagClass='atual'; tagLabel='Fase atual'; }
+    else { tagClass='proxima'; tagLabel='Próxima'; }
+    const isCurrent = tagClass === 'atual';
+    return `
+      <div class="phase ${isCurrent?'current':''}">
+        <span class="tag ${tagClass}">${tagLabel}</span>
+        <h3>${p.label}</h3>
+        <div class="dates">${p.range[0].split('-').reverse().join('/')} → ${p.range[1].split('-').reverse().join('/')}</div>
+        <div class="goal">${p.from} → ${p.to}<span>inscritos</span></div>
+        <ul>${p.goals.map(g=>`<li>${g}</li>`).join('')}</ul>
+      </div>`;
+  }).join('');
+  return `<div class="timeline">${cards}</div>`;
+}
+
+function renderChecklist(){
+  const total = ITEMS.length;
+  const done = ITEMS.filter(it => state.checklist[it.id] && state.checklist[it.id].done).length;
+
+  const filtered = ITEMS.filter(it=>{
+    const st = state.checklist[it.id];
+    if(filterPrio !== 'todas' && it.prio !== filterPrio) return false;
+    if(filterGroup !== 'todos' && it.group !== filterGroup) return false;
+    if(filterStatus === 'pendente' && st.done) return false;
+    if(filterStatus === 'concluido' && !st.done) return false;
+    return true;
+  });
+
+  const renderRow = (it) => {
+    const st = state.checklist[it.id];
+    return `
+      <div class="item ${st.done?'done':''}">
+        <input type="checkbox" data-id="${it.id}" ${st.done?'checked':''}>
+        <div class="title">${it.title}</div>
+        <div class="date">${it.date}</div>
+        <div class="prio ${it.prio}">${it.prio}</div>
+        <div class="resp"><input type="text" placeholder="Responsável" data-resp="${it.id}" value="${st.responsavel || ''}"></div>
+      </div>`;
+  };
+
+  const sectionsHtml = SECTIONS.map(sec=>{
+    const secItemsAll = ITEMS.filter(it => it.section === sec.id);
+    const secItemsFiltered = filtered.filter(it => it.section === sec.id);
+    if(!secItemsFiltered.length) return '';
+    const secDone = secItemsAll.filter(it=>state.checklist[it.id].done).length;
+
+    const groupsHtml = GROUPS.map(grp=>{
+      const items = secItemsFiltered.filter(it => it.group === grp.id);
+      if(!items.length) return '';
+      const grpAll = secItemsAll.filter(it => it.group === grp.id);
+      const grpDone = grpAll.filter(it=>state.checklist[it.id].done).length;
+      return `
+        <div class="cl-subhead">
+          <span>${grp.label}</span>
+          <span class="count">${grpDone}/${grpAll.length}</span>
+        </div>
+        ${items.map(renderRow).join('')}`;
+    }).join('');
+
+    return `
+      <div class="cl-section">
+        <div class="cl-section-head">
+          <h4>${sec.label}</h4>
+          <span class="count">${secDone}/${secItemsAll.length}</span>
+        </div>
+        ${groupsHtml}
+      </div>`;
+  }).join('');
+
+  return `
+    <div class="cl-controls">
+      <div class="filter-group">
+        <button data-group="todos" class="${filterGroup==='todos'?'active':''}">Todos</button>
+        <button data-group="divulgacao" class="${filterGroup==='divulgacao'?'active':''}">Divulgação</button>
+        <button data-group="operacional" class="${filterGroup==='operacional'?'active':''}">Operacional</button>
+      </div>
+      <div class="filter-group">
+        <button data-prio="todas" class="${filterPrio==='todas'?'active':''}">Todas prioridades</button>
+        <button data-prio="alta" class="${filterPrio==='alta'?'active':''}">Alta</button>
+        <button data-prio="media" class="${filterPrio==='media'?'active':''}">Média</button>
+        <button data-prio="baixa" class="${filterPrio==='baixa'?'active':''}">Baixa</button>
+      </div>
+      <div class="filter-group">
+        <button data-status="todos" class="${filterStatus==='todos'?'active':''}">Todos</button>
+        <button data-status="pendente" class="${filterStatus==='pendente'?'active':''}">Pendentes</button>
+        <button data-status="concluido" class="${filterStatus==='concluido'?'active':''}">Concluídos</button>
+      </div>
+      <div class="overall-progress"><b>${done}/${total}</b> ações concluídas</div>
+    </div>
+    ${sectionsHtml || '<div class="desc">Nenhum item para este filtro.</div>'}
+  `;
+}
+
+function bindEvents(){
+  document.querySelectorAll('nav.tabs button').forEach(btn=>{
+    btn.onclick = ()=>{ activeTab = btn.dataset.tab; render(); };
+  });
+
+  const inscritosInput = document.getElementById('inscritosInput');
+  if(inscritosInput){
+    inscritosInput.onchange = ()=>{
+      const val = Math.max(0, parseInt(inscritosInput.value)||0);
+      const today = new Date().toISOString().slice(0,10);
+      upsertDailyLog(today, val);
+    };
+  }
+  const esqInput = document.getElementById('esquentasInput');
+  if(esqInput) esqInput.onchange = ()=> updateDashboardMetric('esquentas', Math.max(0,parseInt(esqInput.value)||0));
+
+  document.querySelectorAll('input[data-chan]').forEach(el=>{
+    el.onchange = ()=> updateChannel(el.dataset.chan, el.dataset.field, Math.max(0, parseInt(el.value)||0));
+  });
+
+  document.querySelectorAll('input[type=checkbox][data-id]').forEach(el=>{
+    el.onchange = ()=> toggleChecklist(el.dataset.id, el.checked);
+  });
+
+  document.querySelectorAll('input[data-resp]').forEach(el=>{
+    el.onchange = ()=> updateResponsavel(el.dataset.resp, el.value);
+  });
+
+  document.querySelectorAll('.filter-group button[data-prio]').forEach(btn=>{
+    btn.onclick = ()=>{ filterPrio = btn.dataset.prio; render(); };
+  });
+  document.querySelectorAll('.filter-group button[data-status]').forEach(btn=>{
+    btn.onclick = ()=>{ filterStatus = btn.dataset.status; render(); };
+  });
+  document.querySelectorAll('.filter-group button[data-group]').forEach(btn=>{
+    btn.onclick = ()=>{ filterGroup = btn.dataset.group; render(); };
+  });
+
+  const logBtn = document.getElementById('logSaveBtn');
+  if(logBtn){
+    logBtn.onclick = ()=>{
+      const dateVal = document.getElementById('logDateInput').value;
+      const totalVal = parseInt(document.getElementById('logTotalInput').value);
+      if(!dateVal || isNaN(totalVal) || totalVal < 0) return;
+      upsertDailyLog(dateVal, totalVal);
+    };
+  }
+  document.querySelectorAll('button[data-del-log]').forEach(btn=>{
+    btn.onclick = ()=> deleteDailyLog(btn.dataset.delLog);
+  });
+
+  const addAmbBtn = document.getElementById('addAmbBtn');
+  if(addAmbBtn) addAmbBtn.onclick = addEmbaixador;
+
+  document.querySelectorAll('button[data-amb-del]').forEach(btn=>{
+    btn.onclick = ()=> deleteEmbaixador(btn.dataset.ambDel);
+  });
+
+  document.querySelectorAll('[data-amb][data-field]').forEach(el=>{
+    el.onchange = ()=>{
+      const value = el.type === 'checkbox' ? el.checked : el.value;
+      updateEmbaixadorField(el.dataset.amb, el.dataset.field, value);
+    };
+  });
+
+  const exportBtn = document.getElementById('exportBtn');
+  if(exportBtn) exportBtn.onclick = exportData;
+
+  const importBtn = document.getElementById('importBtn');
+  const importFile = document.getElementById('importFile');
+  if(importBtn && importFile){
+    importBtn.onclick = () => importFile.click();
+    importFile.onchange = () => {
+      if(importFile.files && importFile.files[0]) importData(importFile.files[0]);
+      importFile.value = '';
+    };
+  }
+
+  /* Patrocínios */
+  const addPatroBtn = document.getElementById('addPatroBtn');
+  if(addPatroBtn) addPatroBtn.onclick = addPatrocinio;
+
+  document.querySelectorAll('button[data-patro-del]').forEach(btn=>{
+    btn.onclick = ()=> deletePatrocinio(btn.dataset.patroDel);
+  });
+
+  document.querySelectorAll('[data-patro][data-field]').forEach(el=>{
+    el.onchange = ()=>{
+      const value = el.type === 'checkbox' ? el.checked : el.value;
+      updatePatrocinioField(el.dataset.patro, el.dataset.field, value);
+    };
+  });
+
+  /* Produção & Documentação */
+  const addProdItemBtn = document.getElementById('addProdItemBtn');
+  if(addProdItemBtn) addProdItemBtn.onclick = ()=> addProducaoItem('producao');
+  const addDocItemBtn = document.getElementById('addDocItemBtn');
+  if(addDocItemBtn) addDocItemBtn.onclick = ()=> addProducaoItem('documentacao');
+
+  document.querySelectorAll('button[data-prod-del]').forEach(btn=>{
+    btn.onclick = ()=> deleteProducaoItem(btn.dataset.prodDel);
+  });
+
+  document.querySelectorAll('[data-prod][data-field]').forEach(el=>{
+    el.onchange = ()=>{
+      const value = el.type === 'checkbox' ? el.checked : el.value;
+      updateProducaoField(el.dataset.prod, el.dataset.field, value);
+    };
+  });
+
+  document.querySelectorAll('.filter-group button[data-prodcat]').forEach(btn=>{
+    btn.onclick = ()=>{ filterProdCat = btn.dataset.prodcat; render(); };
+  });
+  document.querySelectorAll('.filter-group button[data-prodstatus]').forEach(btn=>{
+    btn.onclick = ()=>{ filterProdStatus = btn.dataset.prodstatus; render(); };
+  });
+
+  /* Orçamento */
+  document.querySelectorAll('[data-orc][data-field]').forEach(el=>{
+    el.onchange = ()=>{
+      let value = el.value;
+      if(el.type === 'number') value = value === '' ? null : Number(value);
+      if(el.dataset.field === 'escolhido') value = value === '' ? null : parseInt(value, 10);
+      updateOrcamentoField(el.dataset.orc, el.dataset.field, value);
+    };
+  });
+}
+
+/* ---------------- Init ---------------- */
+
+async function init(){
+  if(!sb){
+    document.getElementById('app').innerHTML = `
+      <div class="loading">
+        Configure SUPABASE_URL e SUPABASE_ANON_KEY no topo deste arquivo (index.html) antes de usar.<br>
+        Veja o README.md para o passo a passo.
+      </div>`;
+    return;
+  }
+  try{
+    await fetchAll();
+  }catch(e){
+    document.getElementById('app').innerHTML = `
+      <div class="loading">
+        Não consegui conectar ao Supabase.<br>
+        Confira a URL/chave e se o schema.sql foi executado no seu projeto.<br>
+        Detalhe técnico: ${(e && e.message) || e}
+      </div>`;
+    return;
+  }
+  render();
+  subscribeRealtime();
+}
+
+init();
+</script>
+</body>
+</html>
