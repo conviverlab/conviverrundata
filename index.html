@@ -376,8 +376,8 @@
    CONFIGURAÇÃO — troque pelos dados do SEU projeto Supabase
    (Supabase Dashboard > Project Settings > API)
    ================================================================ */
-const SUPABASE_URL = 'https://ptlhewtkpdwgotpfhgik.supabase.co';
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InB0bGhld3RrcGR3Z290cGZoZ2lrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODM2NjAxNDUsImV4cCI6MjA5OTIzNjE0NX0.bwWlRAi_A7rUKG6GoZW2m82nJbDx9594dB7YKs03RZE';
+const SUPABASE_URL = 'https://YOUR-PROJECT-REF.supabase.co';
+const SUPABASE_ANON_KEY = 'YOUR-ANON-PUBLIC-KEY';
 /* ================================================================ */
 
 const sb = (SUPABASE_URL.includes('YOUR-PROJECT') || SUPABASE_ANON_KEY.includes('YOUR-ANON'))
@@ -887,10 +887,11 @@ function renderDashboard(cPhase){
   }).join('');
 
   return `
-    <div class="alert ok">
-      <h3>Prazos TF regularizados</h3>
-      <p>Abertura no aplicativo, grade de camisetas, envio de logos e aprovação da arte estão concluídos junto à TF. O único pendente agora é a chegada física dos kits (camisetas + gym bags) para liberar a distribuição. Atualize a data assim que houver previsão no item "u13" do checklist.</p>
-    </div>
+    <section class="block">
+      <h2>Linha do tempo</h2>
+      <div class="desc">As 4 fases da campanha, com a fase atual destacada.</div>
+      ${renderPhaseCards(cPhase)}
+    </section>
 
     <div class="kpi-grid">
       <div class="kpi">
@@ -1294,7 +1295,7 @@ function renderOrcamento(){
     </section>`;
 }
 
-function renderTimeline(cPhase){
+function renderPhaseCards(cPhase){
   const now = new Date();
   const cards = PHASES.map(p=>{
     const start = new Date(p.range[0]+'T00:00:00');
@@ -1314,6 +1315,10 @@ function renderTimeline(cPhase){
       </div>`;
   }).join('');
   return `<div class="timeline">${cards}</div>`;
+}
+
+function renderTimeline(cPhase){
+  return renderPhaseCards(cPhase);
 }
 
 function renderChecklist(){
