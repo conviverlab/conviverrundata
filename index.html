@@ -1057,7 +1057,8 @@ function renderPaceStrip(){
 function renderGrowthChart(entries){
   const W = 760, H = 260, padL = 44, padR = 20, padT = 16, padB = 30;
   const totalDays = totalPlanDays();
-  const targets = [180,280,370,450];
+  const MILESTONES = getMilestones();
+  const targets = [...state.phases].sort((a,b)=>a.ordem-b.ordem).map(p=>p.meta_fim);
   const maxVal = Math.max(FINAL_TARGET, ...entries.map(e=>e.total)) * 1.06;
   const minVal = 0;
   const xForDay = day => padL + (Math.min(day,totalDays) * (W - padL - padR) / totalDays);
