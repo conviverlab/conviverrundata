@@ -12,6 +12,17 @@ Tempo estimado de deploy: 15 a 20 minutos.
 
 ---
 
+## Atenção: schema atualizado (tudo editável)
+
+Esta versão do `schema.sql` reconstrói as tabelas `channels` e substitui
+`checklist_state` por `checklist_items` e `phases`, para que fases, canais e
+o checklist principal sejam totalmente editáveis pelo time (não só o status).
+**Se você já rodou uma versão anterior deste schema no seu projeto Supabase,
+rode este arquivo de novo inteiro** — ele recria essas tabelas do zero com a
+estrutura nova e repopula com o conteúdo atual. Os dados que você já tiver
+digitado em checklist/canais na versão antiga não são migrados automaticamente
+(exporte um backup antes, se quiser guardar).
+
 ## 1. Criar o projeto no Supabase
 
 1. Acesse [supabase.com](https://supabase.com) e entre na sua conta.
@@ -104,10 +115,15 @@ duas abas abertas, uma não atualizar quando a outra edita algo:
 
 ## Módulos do painel
 
-- **Dashboard**: KPIs gerais, evolução diária de inscritos com meta por
-  marcos, conversão por canal.
-- **Linha do tempo**: as 4 fases da campanha.
-- **Checklist**: as ações do plano emergencial (divulgação + operacional).
+- **Dashboard**: KPIs gerais, linha do tempo das fases, evolução diária de
+  inscritos com meta por marcos, conversão por canal (canais podem ser
+  renomeados, adicionados e removidos).
+- **Linha do tempo**: as 4 fases da campanha. Datas, metas de inscritos e a
+  lista de objetivos de cada fase são editáveis e você pode adicionar ou
+  remover objetivos livremente.
+- **Checklist**: as ações do plano (divulgação + operacional), totalmente
+  editável. Título, data, prioridade, fase e categoria de cada item podem ser
+  alterados, e dá para adicionar ou remover itens em qualquer fase.
 - **Embaixadores**: nome, @, cupom, se gravou o Reels, data de publicação.
 - **Patrocínios**: empresas em contato, data do 1º e do último contato,
   status da negociação, se fechou, observações.

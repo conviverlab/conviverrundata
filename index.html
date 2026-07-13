@@ -120,6 +120,7 @@
     color:var(--text-primary);padding:6px 8px;font-family:'JetBrains Mono',monospace;font-size:13px;
   }
   table.channels input:focus{outline:none;border-color:var(--purple);}
+  table.channels input.chan-nome{width:100%;min-width:140px;font-family:'Inter',sans-serif;font-size:12.5px;text-align:left;}
   .conv-badge{
     font-family:'JetBrains Mono',monospace;font-size:12px;padding:3px 9px;border-radius:999px;
     background:var(--purple-soft);color:var(--purple);font-weight:600;
@@ -296,11 +297,40 @@
   .phase .tag.atual{background:var(--coral-soft);color:var(--coral);}
   .phase .tag.concluida{background:var(--success-soft);color:var(--success);}
   .phase .tag.proxima{background:var(--bg);color:var(--text-tertiary);border:1px solid var(--border);}
-  .phase h3{font-family:'Space Grotesk',sans-serif;font-size:16px;margin:0 0 4px;}
-  .phase .dates{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text-tertiary);margin-bottom:10px;}
-  .phase .goal{font-size:24px;font-weight:700;font-family:'Space Grotesk',sans-serif;color:var(--text-primary);}
-  .phase .goal span{font-size:12px;color:var(--text-tertiary);font-weight:400;font-family:'Inter',sans-serif;display:block;margin-top:2px;}
-  .phase ul{margin:12px 0 0;padding-left:16px;font-size:12px;color:var(--text-secondary);line-height:1.6;}
+  .phase-label-input{
+    width:100%;background:transparent;border:none;color:var(--text-primary);
+    font-family:'Space Grotesk',sans-serif;font-size:16px;font-weight:700;margin:0 0 8px;padding:2px 0;
+  }
+  .phase-label-input:focus{outline:none;border-bottom:1px solid var(--purple);}
+  .dates-edit{display:flex;align-items:center;gap:6px;margin-bottom:10px;}
+  .dates-edit input{
+    background:var(--card);border:1px solid var(--border);border-radius:6px;color:var(--text-secondary);
+    padding:5px 6px;font-family:'JetBrains Mono',monospace;font-size:10.5px;flex:1;min-width:0;
+  }
+  .dates-edit span{color:var(--text-tertiary);font-size:11px;}
+  .goal-edit{display:flex;align-items:center;gap:6px;margin-bottom:4px;}
+  .goal-edit input{
+    width:56px;background:var(--card);border:1px solid var(--border);border-radius:6px;color:var(--text-primary);
+    padding:6px 7px;font-family:'Space Grotesk',sans-serif;font-size:15px;font-weight:700;text-align:center;
+  }
+  .goal-edit span{color:var(--text-tertiary);font-size:12px;}
+  .goal-edit-lbl{font-family:'Inter',sans-serif !important;font-size:11px !important;margin-left:2px;}
+  .dates-edit input:focus,.goal-edit input:focus{outline:none;border-color:var(--purple);}
+  .phase-goals{list-style:none;margin:12px 0 0;padding:0;font-size:12px;color:var(--text-secondary);}
+  .phase-goals li{display:flex;align-items:center;gap:6px;margin-bottom:6px;}
+  .phase-goals li input[type=text]{
+    flex:1;background:var(--card);border:1px solid var(--border);border-radius:6px;color:var(--text-secondary);
+    padding:6px 8px;font-size:12px;font-family:'Inter',sans-serif;
+  }
+  .phase-goals li input:focus{outline:none;border-color:var(--purple);color:var(--text-primary);}
+  .phase-goals li button{
+    background:transparent;border:1px solid var(--border);color:var(--text-tertiary);
+    width:22px;height:22px;border-radius:6px;cursor:pointer;font-size:13px;line-height:1;flex-shrink:0;
+  }
+  .phase-goals li button:hover{border-color:var(--danger);color:var(--danger);}
+  .phase-goals li.goal-add button{border-color:var(--purple);color:var(--purple);}
+  .phase-goals li.goal-add button:hover{background:var(--purple);color:#fff;}
+  .phase-goals li.goal-add input{font-style:italic;}
 
   .cl-controls{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:18px;align-items:center;justify-content:space-between;}
   .filter-group{display:flex;gap:6px;flex-wrap:wrap;}
@@ -330,7 +360,7 @@
   .item{display:grid;grid-template-columns:auto 1fr auto auto auto;gap:12px;align-items:center;padding:10px 8px;border-radius:10px;transition:.15s ease;}
   .item:hover{background:var(--card-hover);}
   .item.done .title{text-decoration:line-through;color:var(--text-tertiary);}
-  .item input[type=checkbox]{width:18px;height:18px;accent-color:var(--success);cursor:pointer;}
+  .item input[type=checkbox]{width:18px;height:18px;accent-color:var(--success);cursor:pointer;flex-shrink:0;}
   .item .title{font-size:13.5px;color:var(--text-primary);}
   .item .date{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text-tertiary);white-space:nowrap;}
   .item .prio{
@@ -345,12 +375,29 @@
     color:var(--text-secondary);padding:6px 8px;font-size:11.5px;font-family:'Inter',sans-serif;
   }
   .item .resp input:focus{outline:none;border-color:var(--purple);color:var(--text-primary);}
-  @media (max-width:720px){
-    .item{grid-template-columns:auto 1fr;grid-template-areas:"cb title" "cb meta";}
-    .item input[type=checkbox]{grid-area:cb;}
-    .item .title{grid-area:title;}
-    .item .date,.item .prio,.item .resp{grid-area:meta;display:inline-block;margin-right:8px;}
+
+  /* checklist principal editável */
+  .item.editable{
+    display:flex;flex-wrap:wrap;gap:8px;align-items:center;background:var(--bg-elevated);
+    border:1px solid var(--border);border-radius:10px;padding:8px 10px;margin-bottom:6px;
   }
+  .item.editable:hover{background:var(--card-hover);}
+  .item.editable .title-input{
+    flex:1;min-width:200px;background:var(--card);border:1px solid var(--border);border-radius:7px;
+    color:var(--text-primary);padding:7px 9px;font-size:12.5px;font-family:'Inter',sans-serif;
+  }
+  .item.editable .date-input{
+    width:90px;background:var(--card);border:1px solid var(--border);border-radius:7px;color:var(--text-secondary);
+    padding:7px 8px;font-size:11px;font-family:'JetBrains Mono',monospace;
+  }
+  .item.editable .resp-input{
+    width:120px;background:var(--card);border:1px solid var(--border);border-radius:7px;color:var(--text-secondary);
+    padding:7px 8px;font-size:11.5px;font-family:'Inter',sans-serif;
+  }
+  .item.editable select{padding:6px 8px;font-size:11px;}
+  .item.editable input:focus,.item.editable select:focus{outline:none;border-color:var(--purple);}
+  .item.editable.done .title-input{text-decoration:line-through;color:var(--text-tertiary);}
+  .add-item-btn{margin:4px 0 14px;}
 
   footer{margin-top:30px;color:var(--text-tertiary);font-size:11.5px;font-family:'JetBrains Mono',monospace;display:flex;justify-content:space-between;flex-wrap:wrap;gap:10px;align-items:center;}
   .save-msg{color:var(--success);opacity:0;transition:opacity .3s;}
@@ -376,8 +423,8 @@
    CONFIGURAÇÃO — troque pelos dados do SEU projeto Supabase
    (Supabase Dashboard > Project Settings > API)
    ================================================================ */
-const SUPABASE_URL = 'https://ptlhewtkpdwgotpfhgik.supabase.co';
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InB0bGhld3RrcGR3Z290cGZoZ2lrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODM2NjAxNDUsImV4cCI6MjA5OTIzNjE0NX0.bwWlRAi_A7rUKG6GoZW2m82nJbDx9594dB7YKs03RZE';
+const SUPABASE_URL = 'https://YOUR-PROJECT-REF.supabase.co';
+const SUPABASE_ANON_KEY = 'YOUR-ANON-PUBLIC-KEY';
 /* ================================================================ */
 
 const sb = (SUPABASE_URL.includes('YOUR-PROJECT') || SUPABASE_ANON_KEY.includes('YOUR-ANON'))
@@ -393,30 +440,29 @@ function daysBetween(a,b){ return Math.round((b - a) / 86400000); }
 function totalPlanDays(){ return daysBetween(START_DATE, EVENT_DATE); }
 function parseYMD(str){ return new Date(str + 'T00:00:00'); }
 
-const PHASES = [
-  {id:'f1', label:'Fase 1', range:['2026-07-09','2026-07-16'], from:100, to:180, goals:['Ativar base atual de inscritos','Fechar 1º patrocinador','Selecionar 30 embaixadores']},
-  {id:'f2', label:'Fase 2', range:['2026-07-16','2026-07-31'], from:180, to:280, goals:['4 ativações presenciais (esquentas)','Fechar 2º patrocinador','Embaixadores publicando']},
-  {id:'f3', label:'Fase 3', range:['2026-08-01','2026-08-15'], from:280, to:370, goals:['Mídia paga no ar','Conteúdo diário','Disparos WhatsApp/e-mail']},
-  {id:'f4', label:'Fase 4', range:['2026-08-16','2026-08-23'], from:370, to:450, goals:['Comunicação de urgência','Último ciclo de mobilização','Otimização diária']},
+const GROUPS = [
+  {id:'divulgacao', label:'Itens de divulgação'},
+  {id:'operacional', label:'Itens operacionais'},
 ];
 
-const SECTIONS = [
-  {id:'f1', label:'Fase 1 · 09/07 a 16/07'},
-  {id:'f2', label:'Fase 2 · 16/07 a 31/07'},
-  {id:'f3', label:'Fase 3 · 01/08 a 15/08'},
-  {id:'f4', label:'Fase 4 · 16/08 a 23/08'},
-];
-
-const MILESTONES = [
-  {date: START_DATE, value: START_INSCRITOS},
-  ...PHASES.map(p => ({date: parseYMD(p.range[1]), value: p.to}))
-];
+function getMilestones(){
+  const sorted = [...state.phases].sort((a,b)=>a.ordem-b.ordem);
+  const first = sorted[0];
+  const start = first ? parseYMD(first.date_inicio) : START_DATE;
+  const startVal = first ? first.meta_inicio : START_INSCRITOS;
+  return [
+    {date: start, value: startVal},
+    ...sorted.map(p => ({date: parseYMD(p.date_fim), value: p.meta_fim}))
+  ];
+}
 
 function expectedCumulative(dateObj){
-  const days = daysBetween(START_DATE, dateObj);
+  const MILESTONES = getMilestones();
+  if(MILESTONES.length < 2) return START_INSCRITOS;
+  const days = daysBetween(MILESTONES[0].date, dateObj);
   for(let i=0;i<MILESTONES.length-1;i++){
-    const d0 = daysBetween(START_DATE, MILESTONES[i].date);
-    const d1 = daysBetween(START_DATE, MILESTONES[i+1].date);
+    const d0 = daysBetween(MILESTONES[0].date, MILESTONES[i].date);
+    const d1 = daysBetween(MILESTONES[0].date, MILESTONES[i+1].date);
     if(days <= d1 || i === MILESTONES.length-2){
       const clamped = Math.max(d0, Math.min(days, d1));
       const t = d1===d0 ? 1 : (clamped-d0)/(d1-d0);
@@ -427,88 +473,15 @@ function expectedCumulative(dateObj){
 }
 
 function phaseDailyRate(phaseId){
-  const p = PHASES.find(x=>x.id===phaseId);
+  const p = state.phases.find(x=>x.id===phaseId);
   if(!p) return (FINAL_TARGET-START_INSCRITOS)/totalPlanDays();
-  const days = daysBetween(parseYMD(p.range[0]), parseYMD(p.range[1]));
-  return (p.to - p.from) / days;
+  const days = daysBetween(parseYMD(p.date_inicio), parseYMD(p.date_fim));
+  return days>0 ? (p.meta_fim - p.meta_inicio) / days : 0;
 }
 
-const GROUPS = [
-  {id:'divulgacao', label:'Itens de divulgação'},
-  {id:'operacional', label:'Itens operacionais'},
-];
-
-const ITEMS = [
-  // FASE 1 — divulgação
-  {id:'f1-1',section:'f1',group:'divulgacao',title:'Extrair lista dos 100 inscritos atuais e contatar individualmente',date:'10/07',prio:'alta'},
-  {id:'f1-2',section:'f1',group:'divulgacao',title:'Criar arte de Stories para compartilhamento dos inscritos',date:'10/07',prio:'media'},
-  {id:'f1-3',section:'f1',group:'divulgacao',title:'Revisar influenciadores acionados e reforçar quem não publicou',date:'11/07',prio:'media'},
-  {id:'f1-4',section:'f1',group:'divulgacao',title:'Republicar conteúdos já produzidos pelos influenciadores',date:'12/07',prio:'baixa'},
-  {id:'f1-5',section:'f1',group:'divulgacao',title:'Produzir conteúdo de conversão: troféu, medalha, kit, percurso, benefícios',date:'12/07',prio:'media'},
-  {id:'f1-6',section:'f1',group:'divulgacao',title:'Reforçar parceiros e revisar oportunidades de e-mail marketing',date:'13/07',prio:'media'},
-  {id:'f1-7',section:'f1',group:'divulgacao',title:'Reforçar assessorias esportivas e identificar atletas influentes',date:'13/07',prio:'media'},
-  {id:'f1-8',section:'f1',group:'divulgacao',title:'Selecionar cerca de 30 embaixadores e formalizar convites',date:'14/07',prio:'alta'},
-  {id:'f1-9',section:'f1',group:'divulgacao',title:'Confirmar embaixadora Ilana (Garotos que Correm)',date:'10/07',prio:'media'},
-  {id:'f1-10',section:'f1',group:'divulgacao',title:'Mapear academias de Parnaíba e liberar cupons exclusivos',date:'14/07',prio:'media'},
-  {id:'f1-11',section:'f1',group:'divulgacao',title:'Criar competição entre academias e definir premiação',date:'15/07',prio:'media'},
-  {id:'f1-12',section:'f1',group:'divulgacao',title:'Confirmar com Jair a equipe de beach tennis patrocinada e acionar atletas',date:'11/07',prio:'baixa'},
-  {id:'f1-13',section:'f1',group:'divulgacao',title:'Fechar o 1º patrocinador oficial',date:'16/07',prio:'alta'},
-
-  // FASE 1 — operacional
-  {id:'u1',section:'f1',group:'operacional',title:'Prazos TF (abertura no app, camisetas, logos, arte) finalizados. Confirmar registro formal com a TF',date:'09/07',prio:'baixa'},
-  {id:'u13',section:'f1',group:'operacional',title:'Acompanhar chegada dos kits (camisetas + gym bags) e liberar cronograma de distribuição',date:'a confirmar',prio:'alta'},
-  {id:'u2',section:'f1',group:'operacional',title:'Validar trajeto aprovado e configurações da prova junto à TF',date:'10/07',prio:'alta'},
-  {id:'u3',section:'f1',group:'operacional',title:'Confirmar ausência de pendências na plataforma TFSports/Deskfy',date:'10/07',prio:'alta'},
-  {id:'u4',section:'f1',group:'operacional',title:'Revisar orçamentos ponto a ponto (Fabiano x Maurício), recalculando itens que escalam com o público de 450',date:'10/07',prio:'alta'},
-  {id:'u5',section:'f1',group:'operacional',title:'Fechar orçamento, fornecedor e modelo final de troféus e medalhas',date:'10/07',prio:'alta'},
-  {id:'u6',section:'f1',group:'operacional',title:'Decidir sobre troféus PCD e 60+ (110 unidades em revisão)',date:'10/07',prio:'alta'},
-  {id:'u7',section:'f1',group:'operacional',title:'Confirmar ponto exato de largada/chegada na Av. Portinho e alinhar com planta do evento e alvará',date:'10/07',prio:'alta'},
-  {id:'u8',section:'f1',group:'operacional',title:'Solicitar aos produtores locais: levantamento, orçamento e 2-3 fornecedores por categoria',date:'10/07',prio:'alta'},
-  {id:'u9',section:'f1',group:'operacional',title:'Consolidar planilha mestre comparativa de fornecedores',date:'12/07',prio:'alta'},
-  {id:'u10',section:'f1',group:'operacional',title:'Estruturar cupons de desconto por canal, rastreáveis por origem',date:'10/07',prio:'alta'},
-  {id:'u11',section:'f1',group:'operacional',title:'Criar cupom exclusivo e arte de divulgação para corretores',date:'09/07',prio:'alta'},
-  {id:'u12',section:'f1',group:'operacional',title:'Distribuir material e iniciar captação via corretores',date:'10/07',prio:'alta'},
-  {id:'g-1',section:'f1',group:'operacional',title:'Reunião semanal de acompanhamento de indicadores',date:'toda sexta',prio:'alta'},
-  {id:'g-2',section:'f1',group:'operacional',title:'Atualizar este painel diariamente',date:'diário',prio:'alta'},
-  {id:'g-3',section:'f1',group:'operacional',title:'Criar calendário único de comunicação (marketing, imprensa, redes, mídia paga, parceiros, embaixadores)',date:'14/07',prio:'media'},
-  {id:'g-7',section:'f1',group:'operacional',title:'Definir formato de premiação 2027 (todas as categorias x sorteio)',date:'a definir',prio:'media'},
-
-  // FASE 2 — divulgação
-  {id:'f2-1',section:'f2',group:'divulgacao',title:'Planejar e executar ativação no Aeroporto',date:'18/07',prio:'media'},
-  {id:'f2-2',section:'f2',group:'divulgacao',title:'Planejar e executar ativação na Praça do Trem',date:'21/07',prio:'media'},
-  {id:'f2-3',section:'f2',group:'divulgacao',title:'Planejar e executar ativação na Av. São Sebastião / loja TF',date:'24/07',prio:'media'},
-  {id:'f2-4',section:'f2',group:'divulgacao',title:'Planejar e executar ativação em academia de grande fluxo',date:'27/07',prio:'media'},
-  {id:'f2-5',section:'f2',group:'divulgacao',title:'Iniciar oficialmente a competição entre academias e divulgar ranking',date:'16/07',prio:'media'},
-  {id:'f2-6',section:'f2',group:'divulgacao',title:'Criar dashboard público de academias (ranking, evolução semanal)',date:'20/07',prio:'baixa'},
-  {id:'f2-7',section:'f2',group:'divulgacao',title:'Gravar briefing e conteúdos dos 30 embaixadores',date:'16/07',prio:'alta'},
-  {id:'f2-8',section:'f2',group:'divulgacao',title:'Embaixadores publicam Reels: convite, inscrição, cupom',date:'16 a 31/07',prio:'media'},
-  {id:'f2-9',section:'f2',group:'divulgacao',title:'Fechar o 2º patrocinador oficial',date:'31/07',prio:'alta'},
-
-  // FASE 3 — divulgação
-  {id:'f3-1',section:'f3',group:'divulgacao',title:'Montar calendário diário de conteúdo até o evento',date:'01/08',prio:'media'},
-  {id:'f3-2',section:'f3',group:'divulgacao',title:'Integrar narrativa com o lançamento do Bairro Planejado',date:'03/08',prio:'baixa'},
-  {id:'f3-3',section:'f3',group:'divulgacao',title:'Planejar campanhas de mídia paga (kit, percurso, medalha, últimas vagas)',date:'05/08',prio:'alta'},
-  {id:'f3-4',section:'f3',group:'divulgacao',title:'Rodar mídia paga',date:'10 a 23/08',prio:'alta'},
-  {id:'f3-5',section:'f3',group:'divulgacao',title:'Criar e executar cronograma de disparos WhatsApp e e-mail',date:'05/08',prio:'media'},
-  {id:'f3-6',section:'f3',group:'divulgacao',title:'Projetar e acompanhar metas por canal semanalmente',date:'01/08',prio:'alta'},
-
-  // FASE 3 — operacional
-  {id:'g-4',section:'f3',group:'operacional',title:'Providenciar documentos obrigatórios: PERMIT, ECAD, planta, RRT/ART, alvará',date:'01/08',prio:'alta'},
-  {id:'g-5',section:'f3',group:'operacional',title:'Contratar seguro atleta via TFSports',date:'01/08',prio:'media'},
-
-  // FASE 4 — divulgação
-  {id:'f4-1',section:'f4',group:'divulgacao',title:'Produzir comunicação de urgência: últimas vagas, contagem regressiva',date:'16/08',prio:'alta'},
-  {id:'f4-2',section:'f4',group:'divulgacao',title:'Publicar bastidores de montagem e entrega de kits',date:'18/08',prio:'media'},
-  {id:'f4-3',section:'f4',group:'divulgacao',title:'Último ciclo de mobilização de todos os canais',date:'16/08',prio:'alta'},
-  {id:'f4-4',section:'f4',group:'divulgacao',title:'Reforçar mídia paga, WhatsApp e e-mail na reta final',date:'16/08',prio:'alta'},
-  {id:'f4-5',section:'f4',group:'divulgacao',title:'Monitorar diariamente e otimizar investimento se necessário',date:'16 a 22/08',prio:'alta'},
-
-  // FASE 4 — operacional
-  {id:'g-6',section:'f4',group:'operacional',title:'Validar itens obrigatórios TF no dia do evento (arena, dispersão, comunicação, cronometragem)',date:'20/08',prio:'alta'},
-];
-
 let state = {
-  checklist: {},
+  phases: [],
+  checklistItems: [],
   dailyLog: [],
   embaixadores: [],
   dashboard: { patrocinadores:0, esquentas:0, canais: [] },
@@ -532,14 +505,15 @@ function getCurrentInscritos(){
 
 function currentPhase(){
   const now = new Date();
-  for(const p of PHASES){
-    const start = new Date(p.range[0]+'T00:00:00');
-    const end = new Date(p.range[1]+'T23:59:59');
+  const sorted = [...state.phases].sort((a,b)=>a.ordem-b.ordem);
+  for(const p of sorted){
+    const start = new Date(p.date_inicio+'T00:00:00');
+    const end = new Date(p.date_fim+'T23:59:59');
     if(now >= start && now <= end) return p.id;
   }
-  if(now < new Date(PHASES[0].range[0]+'T00:00:00')) return PHASES[0].id;
+  if(sorted.length && now < new Date(sorted[0].date_inicio+'T00:00:00')) return sorted[0].id;
   if(now > EVENT_DATE) return 'done';
-  return PHASES[PHASES.length-1].id;
+  return sorted.length ? sorted[sorted.length-1].id : 'done';
 }
 
 function debounce(fn, ms){
@@ -550,16 +524,18 @@ function debounce(fn, ms){
 /* ---------------- Supabase: leitura ---------------- */
 
 async function fetchAll(){
-  const [cl, dl, amb, ch, dm, patro, prod, orc] = await Promise.all([
-    sb.from('checklist_state').select('*'),
+  const [ph, cl, dl, amb, ch, dm, patro, prod, orc] = await Promise.all([
+    sb.from('phases').select('*').order('ordem', {ascending:true}),
+    sb.from('checklist_items').select('*'),
     sb.from('daily_log').select('*').order('date', {ascending:true}),
     sb.from('embaixadores').select('*').order('updated_at', {ascending:true}),
-    sb.from('channels').select('*'),
+    sb.from('channels').select('*').order('updated_at', {ascending:true}),
     sb.from('dashboard_metrics').select('*').eq('id',1).single(),
     sb.from('patrocinios').select('*').order('updated_at', {ascending:true}),
     sb.from('producao_checklist').select('*').order('updated_at', {ascending:true}),
     sb.from('orcamento_cotacoes').select('*'),
   ]);
+  if(ph.error) throw ph.error;
   if(cl.error) throw cl.error;
   if(dl.error) throw dl.error;
   if(amb.error) throw amb.error;
@@ -569,14 +545,19 @@ async function fetchAll(){
   if(prod.error) throw prod.error;
   if(orc.error) throw orc.error;
 
-  const checklistMap = {};
-  ITEMS.forEach(it => checklistMap[it.id] = {done:false, responsavel:''});
-  (cl.data||[]).forEach(row => { checklistMap[row.id] = {done: !!row.done, responsavel: row.responsavel || ''}; });
+  state.phases = (ph.data||[]).map(r => ({
+    id:r.id, label:r.label, ordem:r.ordem, date_inicio:r.date_inicio, date_fim:r.date_fim,
+    meta_inicio:r.meta_inicio, meta_fim:r.meta_fim, goals: r.goals||[]
+  }));
 
-  state.checklist = checklistMap;
+  state.checklistItems = (cl.data||[]).map(r => ({
+    id:r.id, section:r.section, group:r.grp, title:r.title||'', date:r.date_label||'',
+    prio:r.priority||'media', done:!!r.done, responsavel:r.responsavel||''
+  }));
+
   state.dailyLog = (dl.data||[]).map(r => ({date: r.date, total: r.total}));
   state.embaixadores = (amb.data||[]).map(r => ({id:r.id, nome:r.nome||'', handle:r.handle||'', cupom:r.cupom||'', reels:!!r.reels, dataPub:r.data_pub||''}));
-  state.dashboard.canais = (ch.data||[]).map(r => ({nome:r.nome, meta:r.meta||0, resultado:r.resultado||0}));
+  state.dashboard.canais = (ch.data||[]).map(r => ({id:r.id, nome:r.nome||'', meta:r.meta||0, resultado:r.resultado||0}));
   state.dashboard.patrocinadores = dm.data ? (dm.data.patrocinadores||0) : 0;
   state.dashboard.esquentas = dm.data ? (dm.data.esquentas||0) : 0;
 
@@ -602,16 +583,45 @@ async function fetchAll(){
 
 /* ---------------- Supabase: escrita ---------------- */
 
-async function toggleChecklist(id, done){
-  const resp = (state.checklist[id] && state.checklist[id].responsavel) || '';
-  const {error} = await sb.from('checklist_state').upsert({id, done, responsavel:resp, updated_at:new Date().toISOString()});
+async function toggleChecklistItem(id, done){
+  const {error} = await sb.from('checklist_items').update({done, updated_at:new Date().toISOString()}).eq('id', id);
   if(error){ flashStatus('Erro ao salvar', true); return; }
   await fetchAll(); render(); flashStatus('Salvo');
 }
 
-async function updateResponsavel(id, value){
-  const done = (state.checklist[id] && state.checklist[id].done) || false;
-  const {error} = await sb.from('checklist_state').upsert({id, done, responsavel:value, updated_at:new Date().toISOString()});
+async function updateChecklistItemField(id, field, value){
+  const fieldMap = {group:'grp', date:'date_label', prio:'priority'};
+  const dbField = fieldMap[field] || field;
+  const payload = {}; payload[dbField] = value; payload.updated_at = new Date().toISOString();
+  const {error} = await sb.from('checklist_items').update(payload).eq('id', id);
+  if(error){ flashStatus('Erro ao salvar', true); return; }
+  await fetchAll(); render(); flashStatus('Salvo');
+}
+
+async function addChecklistItem(section, grp){
+  const id = 'item-'+Date.now()+'-'+Math.random().toString(36).slice(2,6);
+  const {error} = await sb.from('checklist_items').insert({id, section, grp, title:'Novo item', date_label:'', priority:'media', done:false, responsavel:''});
+  if(error){ flashStatus('Erro ao adicionar', true); return; }
+  await fetchAll(); render(); flashStatus('Salvo');
+}
+
+async function deleteChecklistItem(id){
+  const {error} = await sb.from('checklist_items').delete().eq('id', id);
+  if(error){ flashStatus('Erro ao remover', true); return; }
+  await fetchAll(); render(); flashStatus('Removido');
+}
+
+/* ---------------- Fases ---------------- */
+
+async function updatePhaseField(id, field, value){
+  const payload = {}; payload[field] = value; payload.updated_at = new Date().toISOString();
+  const {error} = await sb.from('phases').update(payload).eq('id', id);
+  if(error){ flashStatus('Erro ao salvar', true); return; }
+  await fetchAll(); render(); flashStatus('Salvo');
+}
+
+async function updatePhaseGoals(id, goals){
+  const {error} = await sb.from('phases').update({goals, updated_at:new Date().toISOString()}).eq('id', id);
   if(error){ flashStatus('Erro ao salvar', true); return; }
   await fetchAll(); render(); flashStatus('Salvo');
 }
@@ -650,11 +660,24 @@ async function deleteEmbaixador(id){
   await fetchAll(); render(); flashStatus('Removido');
 }
 
-async function updateChannel(nome, field, value){
+async function addChannel(){
+  const id = 'ch-'+Date.now()+'-'+Math.random().toString(36).slice(2,6);
+  const {error} = await sb.from('channels').insert({id, nome:'Novo canal', meta:0, resultado:0});
+  if(error){ flashStatus('Erro ao adicionar', true); return; }
+  await fetchAll(); render(); flashStatus('Salvo');
+}
+
+async function updateChannelField(id, field, value){
   const payload = {updated_at:new Date().toISOString()}; payload[field] = value;
-  const {error} = await sb.from('channels').update(payload).eq('nome', nome);
+  const {error} = await sb.from('channels').update(payload).eq('id', id);
   if(error){ flashStatus('Erro ao salvar', true); return; }
   await fetchAll(); render(); flashStatus('Salvo');
+}
+
+async function deleteChannel(id){
+  const {error} = await sb.from('channels').delete().eq('id', id);
+  if(error){ flashStatus('Erro ao remover', true); return; }
+  await fetchAll(); render(); flashStatus('Removido');
 }
 
 async function updateDashboardMetric(field, value){
@@ -736,7 +759,8 @@ async function updateOrcamentoField(itemId, field, value){
 function subscribeRealtime(){
   const refresh = debounce(async ()=>{ await fetchAll(); render(); }, 250);
   sb.channel('tracker-changes')
-    .on('postgres_changes', {event:'*', schema:'public', table:'checklist_state'}, refresh)
+    .on('postgres_changes', {event:'*', schema:'public', table:'phases'}, refresh)
+    .on('postgres_changes', {event:'*', schema:'public', table:'checklist_items'}, refresh)
     .on('postgres_changes', {event:'*', schema:'public', table:'daily_log'}, refresh)
     .on('postgres_changes', {event:'*', schema:'public', table:'embaixadores'}, refresh)
     .on('postgres_changes', {event:'*', schema:'public', table:'channels'}, refresh)
@@ -767,23 +791,59 @@ async function importData(file){
   reader.onload = async () => {
     try{
       const parsed = JSON.parse(reader.result);
-      if(!parsed || !parsed.checklist){ alert('Arquivo inválido: não parece ser um backup deste painel.'); return; }
+      if(!parsed || !parsed.checklistItems){ alert('Arquivo inválido: não parece ser um backup deste painel.'); return; }
       const ops = [];
-      Object.entries(parsed.checklist).forEach(([id,val])=>{
-        ops.push(sb.from('checklist_state').upsert({id, done:!!val.done, responsavel:val.responsavel||'', updated_at:new Date().toISOString()}));
+
+      (parsed.phases||[]).forEach(p=>{
+        ops.push(sb.from('phases').upsert({
+          id:p.id, label:p.label, ordem:p.ordem, date_inicio:p.date_inicio, date_fim:p.date_fim,
+          meta_inicio:p.meta_inicio, meta_fim:p.meta_fim, goals:p.goals||[], updated_at:new Date().toISOString()
+        }));
       });
+
+      (parsed.checklistItems||[]).forEach(it=>{
+        ops.push(sb.from('checklist_items').upsert({
+          id:it.id, section:it.section, grp:it.group, title:it.title||'', date_label:it.date||'',
+          priority:it.prio||'media', done:!!it.done, responsavel:it.responsavel||'', updated_at:new Date().toISOString()
+        }));
+      });
+
       (parsed.dailyLog||[]).forEach(e=>{
         ops.push(sb.from('daily_log').upsert({date:e.date, total:e.total, updated_at:new Date().toISOString()}));
       });
+
       (parsed.embaixadores||[]).forEach(a=>{
         ops.push(sb.from('embaixadores').upsert({id:a.id, nome:a.nome||'', handle:a.handle||'', cupom:a.cupom||'', reels:!!a.reels, data_pub:a.dataPub||null, updated_at:new Date().toISOString()}));
       });
+
+      (parsed.patrocinios||[]).forEach(p=>{
+        ops.push(sb.from('patrocinios').upsert({
+          id:p.id, empresa:p.empresa||'', data_primeiro_contato:p.dataPrimeiroContato||null, data_ultimo_contato:p.dataUltimoContato||null,
+          status:p.status||'Prospecção', fechado:!!p.fechado, observacoes:p.observacoes||'', updated_at:new Date().toISOString()
+        }));
+      });
+
+      (parsed.producaoChecklist||[]).forEach(it=>{
+        ops.push(sb.from('producao_checklist').upsert({
+          id:it.id, titulo:it.titulo||'', categoria:it.categoria||'producao', prazo:it.prazo||null,
+          responsavel:it.responsavel||'', done:!!it.done, observacoes:it.observacoes||'', updated_at:new Date().toISOString()
+        }));
+      });
+
+      Object.entries(parsed.orcamentoCotacoes||{}).forEach(([itemId,c])=>{
+        ops.push(sb.from('orcamento_cotacoes').upsert({
+          item_id:itemId, fornecedor1:c.fornecedor1||'', valor1:c.valor1, fornecedor2:c.fornecedor2||'', valor2:c.valor2,
+          fornecedor3:c.fornecedor3||'', valor3:c.valor3, escolhido:c.escolhido||null, observacoes:c.observacoes||'', updated_at:new Date().toISOString()
+        }));
+      });
+
       if(parsed.dashboard){
         (parsed.dashboard.canais||[]).forEach(c=>{
-          ops.push(sb.from('channels').upsert({nome:c.nome, meta:c.meta||0, resultado:c.resultado||0, updated_at:new Date().toISOString()}));
+          ops.push(sb.from('channels').upsert({id:c.id, nome:c.nome||'', meta:c.meta||0, resultado:c.resultado||0, updated_at:new Date().toISOString()}));
         });
         ops.push(sb.from('dashboard_metrics').update({patrocinadores:parsed.dashboard.patrocinadores||0, esquentas:parsed.dashboard.esquentas||0, updated_at:new Date().toISOString()}).eq('id',1));
       }
+
       await Promise.all(ops);
       await fetchAll();
       render();
@@ -816,7 +876,7 @@ function render(){
   const now = new Date();
   const daysLeft = Math.ceil((EVENT_DATE - now) / 86400000);
   const cPhase = currentPhase();
-  const phaseObj = PHASES.find(p=>p.id===cPhase);
+  const phaseObj = state.phases.find(p=>p.id===cPhase);
   const rtIcon = realtimeStatus==='ao vivo' ? '🟢' : realtimeStatus==='offline' ? '🔴' : '🟡';
 
   app.innerHTML = `
@@ -868,21 +928,24 @@ function render(){
 function renderDashboard(cPhase){
   const inscritos = getCurrentInscritos();
   const dailyLogSorted = [...state.dailyLog].sort((a,b)=> a.date.localeCompare(b.date));
-  const phaseObj = PHASES.find(p=>p.id===cPhase) || PHASES[PHASES.length-1];
-  const phaseTarget = phaseObj.to;
+  const sortedPhases = [...state.phases].sort((a,b)=>a.ordem-b.ordem);
+  const phaseObj = sortedPhases.find(p=>p.id===cPhase) || sortedPhases[sortedPhases.length-1];
+  const phaseTarget = phaseObj ? phaseObj.meta_fim : FINAL_TARGET;
   const pctPhase = Math.min(100, Math.round((inscritos / phaseTarget) * 100));
   const pctFinal = Math.min(100, Math.round((inscritos / 450) * 100));
   const faltamFase = Math.max(0, phaseTarget - inscritos);
   const faltamFinal = Math.max(0, 450 - inscritos);
+  const marcosTexto = sortedPhases.map(p=>`${p.date_fim.split('-').reverse().join('/')} = ${p.meta_fim}`).join(' · ');
 
   const channelRows = state.dashboard.canais.map(c=>{
     const conv = c.meta > 0 ? Math.round((c.resultado / c.meta) * 100) : 0;
     return `
       <tr>
-        <td>${c.nome}</td>
-        <td><input type="number" min="0" data-chan="${c.nome}" data-field="meta" value="${c.meta}"></td>
-        <td><input type="number" min="0" data-chan="${c.nome}" data-field="resultado" value="${c.resultado}"></td>
+        <td><input type="text" class="chan-nome" data-chan="${c.id}" data-field="nome" value="${c.nome}"></td>
+        <td><input type="number" min="0" data-chan="${c.id}" data-field="meta" value="${c.meta}"></td>
+        <td><input type="number" min="0" data-chan="${c.id}" data-field="resultado" value="${c.resultado}"></td>
         <td><span class="conv-badge">${conv}%</span></td>
+        <td><button class="log-del" data-chan-del="${c.id}" title="Remover">×</button></td>
       </tr>`;
   }).join('');
 
@@ -909,7 +972,7 @@ function renderDashboard(cPhase){
       <div class="kpi">
         <div class="lbl">Faltam para a fase atual</div>
         <div class="static">${faltamFase}</div>
-        <div class="hint">${phaseObj.label}: meta ${phaseObj.from} → ${phaseObj.to}</div>
+        <div class="hint">${phaseObj.label}: meta ${phaseObj.meta_inicio} → ${phaseObj.meta_fim}</div>
       </div>
       <div class="kpi">
         <div class="lbl">Patrocinadores confirmados</div>
@@ -930,7 +993,7 @@ function renderDashboard(cPhase){
 
     <section class="block">
       <h2>Evolução diária de inscritos</h2>
-      <div class="desc">Plano por marcos: 09/07 início com ${START_INSCRITOS} · 16/07 = 180 · 31/07 = 280 · 15/08 = 370 · 23/08 = ${FINAL_TARGET}. O ritmo exigido muda a cada fase. A meta ajustada recalcula esse ritmo todo dia com base no que falta e nos dias restantes até 23/08.</div>
+      <div class="desc">Plano por marcos: ${START_DATE.getDate().toString().padStart(2,'0')}/${(START_DATE.getMonth()+1).toString().padStart(2,'0')} início com ${START_INSCRITOS} · ${marcosTexto}. O ritmo exigido muda a cada fase (editável na Linha do tempo). A meta ajustada recalcula esse ritmo todo dia com base no que falta e nos dias restantes até 23/08.</div>
       ${renderPaceStrip()}
       <div class="growth-form">
         <label>Data<input type="date" id="logDateInput" value="${new Date().toISOString().slice(0,10)}"></label>
@@ -943,11 +1006,12 @@ function renderDashboard(cPhase){
 
     <section class="block">
       <h2>Conversão por canal</h2>
-      <div class="desc">Atualize meta e resultado de cada canal para acompanhar a origem das inscrições.</div>
+      <div class="desc">Atualize meta e resultado de cada canal, renomeie ou adicione novos canais.</div>
       <table class="channels">
-        <thead><tr><th>Canal</th><th>Meta</th><th>Resultado</th><th>Conversão</th></tr></thead>
+        <thead><tr><th>Canal</th><th>Meta</th><th>Resultado</th><th>Conversão</th><th></th></tr></thead>
         <tbody>${channelRows}</tbody>
       </table>
+      <button id="addChanBtn" class="btn-primary" style="margin-top:12px;">+ Adicionar canal</button>
     </section>
   `;
 }
@@ -1297,21 +1361,42 @@ function renderOrcamento(){
 
 function renderPhaseCards(cPhase){
   const now = new Date();
-  const cards = PHASES.map(p=>{
-    const start = new Date(p.range[0]+'T00:00:00');
-    const end = new Date(p.range[1]+'T23:59:59');
+  const sorted = [...state.phases].sort((a,b)=>a.ordem-b.ordem);
+  const cards = sorted.map(p=>{
+    const start = new Date(p.date_inicio+'T00:00:00');
+    const end = new Date(p.date_fim+'T23:59:59');
     let tagClass, tagLabel;
     if(now > end){ tagClass='concluida'; tagLabel='Concluída'; }
     else if(now >= start && now <= end){ tagClass='atual'; tagLabel='Fase atual'; }
     else { tagClass='proxima'; tagLabel='Próxima'; }
     const isCurrent = tagClass === 'atual';
+    const goalsHtml = (p.goals||[]).map((g,idx)=>`
+      <li>
+        <input type="text" value="${g}" data-phase-goal="${p.id}" data-goal-idx="${idx}">
+        <button data-phase-goal-del="${p.id}" data-goal-idx="${idx}" title="Remover">×</button>
+      </li>`).join('');
     return `
       <div class="phase ${isCurrent?'current':''}">
         <span class="tag ${tagClass}">${tagLabel}</span>
-        <h3>${p.label}</h3>
-        <div class="dates">${p.range[0].split('-').reverse().join('/')} → ${p.range[1].split('-').reverse().join('/')}</div>
-        <div class="goal">${p.from} → ${p.to}<span>inscritos</span></div>
-        <ul>${p.goals.map(g=>`<li>${g}</li>`).join('')}</ul>
+        <input type="text" class="phase-label-input" data-phase="${p.id}" data-field="label" value="${p.label}">
+        <div class="dates-edit">
+          <input type="date" data-phase="${p.id}" data-field="date_inicio" value="${p.date_inicio}">
+          <span>→</span>
+          <input type="date" data-phase="${p.id}" data-field="date_fim" value="${p.date_fim}">
+        </div>
+        <div class="goal-edit">
+          <input type="number" min="0" data-phase="${p.id}" data-field="meta_inicio" value="${p.meta_inicio}">
+          <span>→</span>
+          <input type="number" min="0" data-phase="${p.id}" data-field="meta_fim" value="${p.meta_fim}">
+          <span class="goal-edit-lbl">inscritos</span>
+        </div>
+        <ul class="phase-goals">
+          ${goalsHtml}
+          <li class="goal-add">
+            <input type="text" placeholder="Novo objetivo..." data-phase-goal-new="${p.id}">
+            <button data-phase-goal-add="${p.id}" title="Adicionar">+</button>
+          </li>
+        </ul>
       </div>`;
   }).join('');
   return `<div class="timeline">${cards}</div>`;
@@ -1322,53 +1407,58 @@ function renderTimeline(cPhase){
 }
 
 function renderChecklist(){
-  const total = ITEMS.length;
-  const done = ITEMS.filter(it => state.checklist[it.id] && state.checklist[it.id].done).length;
+  const items = state.checklistItems;
+  const total = items.length;
+  const done = items.filter(it => it.done).length;
+  const sortedPhases = [...state.phases].sort((a,b)=>a.ordem-b.ordem);
 
-  const filtered = ITEMS.filter(it=>{
-    const st = state.checklist[it.id];
+  const filtered = items.filter(it=>{
     if(filterPrio !== 'todas' && it.prio !== filterPrio) return false;
     if(filterGroup !== 'todos' && it.group !== filterGroup) return false;
-    if(filterStatus === 'pendente' && st.done) return false;
-    if(filterStatus === 'concluido' && !st.done) return false;
+    if(filterStatus === 'pendente' && it.done) return false;
+    if(filterStatus === 'concluido' && !it.done) return false;
     return true;
   });
 
-  const renderRow = (it) => {
-    const st = state.checklist[it.id];
-    return `
-      <div class="item ${st.done?'done':''}">
-        <input type="checkbox" data-id="${it.id}" ${st.done?'checked':''}>
-        <div class="title">${it.title}</div>
-        <div class="date">${it.date}</div>
-        <div class="prio ${it.prio}">${it.prio}</div>
-        <div class="resp"><input type="text" placeholder="Responsável" data-resp="${it.id}" value="${st.responsavel || ''}"></div>
-      </div>`;
-  };
+  const phaseOptions = (current) => sortedPhases.map(p=>`<option value="${p.id}" ${p.id===current?'selected':''}>${p.label}</option>`).join('');
+  const groupOptions = (current) => GROUPS.map(g=>`<option value="${g.id}" ${g.id===current?'selected':''}>${g.label}</option>`).join('');
+  const prioOptions = (current) => ['alta','media','baixa'].map(p=>`<option value="${p}" ${p===current?'selected':''}>${p}</option>`).join('');
 
-  const sectionsHtml = SECTIONS.map(sec=>{
-    const secItemsAll = ITEMS.filter(it => it.section === sec.id);
-    const secItemsFiltered = filtered.filter(it => it.section === sec.id);
-    if(!secItemsFiltered.length) return '';
-    const secDone = secItemsAll.filter(it=>state.checklist[it.id].done).length;
+  const renderRow = (it) => `
+      <div class="item editable ${it.done?'done':''}">
+        <input type="checkbox" data-id="${it.id}" ${it.done?'checked':''}>
+        <input type="text" class="title-input" placeholder="Título" data-item="${it.id}" data-field="title" value="${it.title}">
+        <input type="text" class="date-input" placeholder="data" data-item="${it.id}" data-field="date" value="${it.date}">
+        <select data-item="${it.id}" data-field="prio">${prioOptions(it.prio)}</select>
+        <select data-item="${it.id}" data-field="section">${phaseOptions(it.section)}</select>
+        <select data-item="${it.id}" data-field="group">${groupOptions(it.group)}</select>
+        <input type="text" class="resp-input" placeholder="Responsável" data-item="${it.id}" data-field="responsavel" value="${it.responsavel || ''}">
+        <button class="log-del" data-item-del="${it.id}" title="Remover">×</button>
+      </div>`;
+
+  const sectionsHtml = sortedPhases.map(p=>{
+    const secLabel = `${p.label} · ${p.date_inicio.split('-').reverse().join('/')} a ${p.date_fim.split('-').reverse().join('/')}`;
+    const secItemsAll = items.filter(it => it.section === p.id);
+    const secItemsFiltered = filtered.filter(it => it.section === p.id);
+    const secDone = secItemsAll.filter(it=>it.done).length;
 
     const groupsHtml = GROUPS.map(grp=>{
-      const items = secItemsFiltered.filter(it => it.group === grp.id);
-      if(!items.length) return '';
+      const itemsInGroup = secItemsFiltered.filter(it => it.group === grp.id);
       const grpAll = secItemsAll.filter(it => it.group === grp.id);
-      const grpDone = grpAll.filter(it=>state.checklist[it.id].done).length;
+      const grpDone = grpAll.filter(it=>it.done).length;
       return `
         <div class="cl-subhead">
           <span>${grp.label}</span>
           <span class="count">${grpDone}/${grpAll.length}</span>
         </div>
-        ${items.map(renderRow).join('')}`;
+        ${itemsInGroup.map(renderRow).join('')}
+        <button class="btn-ghost add-item-btn" data-add-item="${p.id}" data-add-group="${grp.id}">+ Adicionar item</button>`;
     }).join('');
 
     return `
       <div class="cl-section">
         <div class="cl-section-head">
-          <h4>${sec.label}</h4>
+          <h4>${secLabel}</h4>
           <span class="count">${secDone}/${secItemsAll.length}</span>
         </div>
         ${groupsHtml}
@@ -1395,7 +1485,7 @@ function renderChecklist(){
       </div>
       <div class="overall-progress"><b>${done}/${total}</b> ações concluídas</div>
     </div>
-    ${sectionsHtml || '<div class="desc">Nenhum item para este filtro.</div>'}
+    ${sectionsHtml}
   `;
 }
 
@@ -1416,15 +1506,70 @@ function bindEvents(){
   if(esqInput) esqInput.onchange = ()=> updateDashboardMetric('esquentas', Math.max(0,parseInt(esqInput.value)||0));
 
   document.querySelectorAll('input[data-chan]').forEach(el=>{
-    el.onchange = ()=> updateChannel(el.dataset.chan, el.dataset.field, Math.max(0, parseInt(el.value)||0));
+    el.onchange = ()=>{
+      const value = el.dataset.field === 'nome' ? el.value : Math.max(0, parseInt(el.value)||0);
+      updateChannelField(el.dataset.chan, el.dataset.field, value);
+    };
   });
+  document.querySelectorAll('button[data-chan-del]').forEach(btn=>{
+    btn.onclick = ()=> deleteChannel(btn.dataset.chanDel);
+  });
+  const addChanBtn = document.getElementById('addChanBtn');
+  if(addChanBtn) addChanBtn.onclick = addChannel;
 
   document.querySelectorAll('input[type=checkbox][data-id]').forEach(el=>{
-    el.onchange = ()=> toggleChecklist(el.dataset.id, el.checked);
+    el.onchange = ()=> toggleChecklistItem(el.dataset.id, el.checked);
   });
 
-  document.querySelectorAll('input[data-resp]').forEach(el=>{
-    el.onchange = ()=> updateResponsavel(el.dataset.resp, el.value);
+  document.querySelectorAll('[data-item][data-field]').forEach(el=>{
+    el.onchange = ()=> updateChecklistItemField(el.dataset.item, el.dataset.field, el.value);
+  });
+  document.querySelectorAll('button[data-item-del]').forEach(btn=>{
+    btn.onclick = ()=> deleteChecklistItem(btn.dataset.itemDel);
+  });
+  document.querySelectorAll('button[data-add-item]').forEach(btn=>{
+    btn.onclick = ()=> addChecklistItem(btn.dataset.addItem, btn.dataset.addGroup);
+  });
+
+  /* Fases: campos e objetivos (goals) */
+  document.querySelectorAll('[data-phase][data-field]').forEach(el=>{
+    el.onchange = ()=>{
+      const field = el.dataset.field;
+      const value = (field==='meta_inicio'||field==='meta_fim') ? Math.max(0, parseInt(el.value)||0) : el.value;
+      updatePhaseField(el.dataset.phase, field, value);
+    };
+  });
+  document.querySelectorAll('[data-phase-goal]').forEach(el=>{
+    el.onchange = ()=>{
+      const phaseId = el.dataset.phaseGoal;
+      const idx = parseInt(el.dataset.goalIdx);
+      const phase = state.phases.find(p=>p.id===phaseId);
+      if(!phase) return;
+      const goals = [...(phase.goals||[])];
+      goals[idx] = el.value;
+      updatePhaseGoals(phaseId, goals);
+    };
+  });
+  document.querySelectorAll('[data-phase-goal-del]').forEach(btn=>{
+    btn.onclick = ()=>{
+      const phaseId = btn.dataset.phaseGoalDel;
+      const idx = parseInt(btn.dataset.goalIdx);
+      const phase = state.phases.find(p=>p.id===phaseId);
+      if(!phase) return;
+      const goals = (phase.goals||[]).filter((_,i)=>i!==idx);
+      updatePhaseGoals(phaseId, goals);
+    };
+  });
+  document.querySelectorAll('[data-phase-goal-add]').forEach(btn=>{
+    btn.onclick = ()=>{
+      const phaseId = btn.dataset.phaseGoalAdd;
+      const input = document.querySelector(`[data-phase-goal-new="${phaseId}"]`);
+      if(!input || !input.value.trim()) return;
+      const phase = state.phases.find(p=>p.id===phaseId);
+      if(!phase) return;
+      const goals = [...(phase.goals||[]), input.value.trim()];
+      updatePhaseGoals(phaseId, goals);
+    };
   });
 
   document.querySelectorAll('.filter-group button[data-prio]').forEach(btn=>{
