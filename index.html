@@ -496,6 +496,14 @@ let filterGroup = 'todos';
 let filterProdCat = 'todos';
 let filterProdStatus = 'todos';
 let realtimeStatus = 'conectando';
+let pendingRemoteRefresh = false;
+
+function isEditingField(){
+  const el = document.activeElement;
+  const app = document.getElementById('app');
+  if(!el || !app) return false;
+  return (el.tagName==='INPUT'||el.tagName==='TEXTAREA'||el.tagName==='SELECT') && app.contains(el);
+}
 
 function getCurrentInscritos(){
   if(!state.dailyLog.length) return START_INSCRITOS;
@@ -606,6 +614,7 @@ async function addChecklistItem(section, grp){
 }
 
 async function deleteChecklistItem(id){
+  if(!confirm('Remover este item do checklist? Essa ação não pode ser desfeita (exceto restaurando um backup).')) return;
   const {error} = await sb.from('checklist_items').delete().eq('id', id);
   if(error){ flashStatus('Erro ao remover', true); return; }
   await fetchAll(); render(); flashStatus('Removido');
@@ -633,6 +642,7 @@ async function upsertDailyLog(date, total){
 }
 
 async function deleteDailyLog(date){
+  if(!confirm(`Remover o registro de inscritos do dia ${date.split('-').reverse().join('/')}? Essa ação não pode ser desfeita (exceto restaurando um backup).`)) return;
   const {error} = await sb.from('daily_log').delete().eq('date', date);
   if(error){ flashStatus('Erro ao remover', true); return; }
   await fetchAll(); render(); flashStatus('Removido');
@@ -655,6 +665,7 @@ async function updateEmbaixadorField(id, field, value){
 }
 
 async function deleteEmbaixador(id){
+  if(!confirm('Remover este embaixador? Essa ação não pode ser desfeita (exceto restaurando um backup).')) return;
   const {error} = await sb.from('embaixadores').delete().eq('id', id);
   if(error){ flashStatus('Erro ao remover', true); return; }
   await fetchAll(); render(); flashStatus('Removido');
@@ -675,6 +686,7 @@ async function updateChannelField(id, field, value){
 }
 
 async function deleteChannel(id){
+  if(!confirm('Remover este canal de conversão? Essa ação não pode ser desfeita (exceto restaurando um backup).')) return;
   const {error} = await sb.from('channels').delete().eq('id', id);
   if(error){ flashStatus('Erro ao remover', true); return; }
   await fetchAll(); render(); flashStatus('Removido');
@@ -707,6 +719,7 @@ async function updatePatrocinioField(id, field, value){
 }
 
 async function deletePatrocinio(id){
+  if(!confirm('Remover este patrocinador da lista? Essa ação não pode ser desfeita (exceto restaurando um backup).')) return;
   const {error} = await sb.from('patrocinios').delete().eq('id', id);
   if(error){ flashStatus('Erro ao remover', true); return; }
   await fetchAll(); render(); flashStatus('Removido');
@@ -730,6 +743,7 @@ async function updateProducaoField(id, field, value){
 }
 
 async function deleteProducaoItem(id){
+  if(!confirm('Remover este item de produção/documentação? A cotação de orçamento vinculada a ele também será removida. Essa ação não pode ser desfeita (exceto restaurando um backup).')) return;
   const {error} = await sb.from('producao_checklist').delete().eq('id', id);
   if(error){ flashStatus('Erro ao remover', true); return; }
   await fetchAll(); render(); flashStatus('Removido');
@@ -757,7 +771,15 @@ async function updateOrcamentoField(itemId, field, value){
 /* ---------------- Realtime ---------------- */
 
 function subscribeRealtime(){
-  const refresh = debounce(async ()=>{ await fetchAll(); render(); }, 250);
+  const refresh = debounce(async ()=>{
+    await fetchAll();
+    /* Se alguém está com um campo em foco (edição em andamento), não
+       substituímos o DOM agora — isso apagaria o que a pessoa está
+       digitando. O estado já foi atualizado; o render acontece assim
+       que o campo perder o foco (ver listener de focusout em init()). */
+    if(isEditingField()){ pendingRemoteRefresh = true; return; }
+    render();
+  }, 250);
   sb.channel('tracker-changes')
     .on('postgres_changes', {event:'*', schema:'public', table:'phases'}, refresh)
     .on('postgres_changes', {event:'*', schema:'public', table:'checklist_items'}, refresh)
@@ -939,29 +961,26 @@ function renderDashboard(cPhase){
 
   const channelRows = state.dashboard.canais.map(c=>{
     const conv = c.meta > 0 ? Math.round((c.resultado / c.meta) * 100) : 0;
+    const semDado = c.meta === 0 && c.resultado === 0;
     return `
-      <tr>
+      <tr${semDado ? ' style="opacity:.5;"' : ''}>
         <td><input type="text" class="chan-nome" data-chan="${c.id}" data-field="nome" value="${c.nome}"></td>
         <td><input type="number" min="0" data-chan="${c.id}" data-field="meta" value="${c.meta}"></td>
         <td><input type="number" min="0" data-chan="${c.id}" data-field="resultado" value="${c.resultado}"></td>
-        <td><span class="conv-badge">${conv}%</span></td>
+        <td><span class="conv-badge">${semDado ? 'sem dado' : conv + '%'}</span></td>
         <td><button class="log-del" data-chan-del="${c.id}" title="Remover">×</button></td>
       </tr>`;
   }).join('');
 
   return `
-    <section class="block">
-      <h2>Linha do tempo</h2>
-      <div class="desc">As 4 fases da campanha, com a fase atual destacada.</div>
-      ${renderPhaseCards(cPhase)}
-    </section>
+    ${renderPaceAlert(cPhase)}
 
     <div class="kpi-grid">
       <div class="kpi">
         <div class="lbl">Total inscritos</div>
         <input type="number" min="0" id="inscritosInput" value="${inscritos}">
         <div class="progress-track"><div class="progress-fill" style="width:${pctPhase}%"></div></div>
-        <div class="hint">${pctPhase}% da meta da ${phaseObj.label.toLowerCase()} (${phaseTarget})</div>
+        <div class="hint">${pctPhase}% da meta da ${phaseObj.label.toLowerCase()} (${phaseTarget}) · edita o registro de hoje na Evolução diária abaixo</div>
       </div>
       <div class="kpi">
         <div class="lbl">Meta final (23/08)</div>
@@ -1014,6 +1033,30 @@ function renderDashboard(cPhase){
       <button id="addChanBtn" class="btn-primary" style="margin-top:12px;">+ Adicionar canal</button>
     </section>
   `;
+}
+
+function renderPaceAlert(cPhase){
+  const now = new Date();
+  const daysRemaining = Math.max(0, daysBetween(now, EVENT_DATE));
+  const current = getCurrentInscritos();
+  const expectedToday = Math.round(expectedCumulative(now));
+  const diff = current - expectedToday;
+  const adjustedDaily = daysRemaining > 0 ? Math.ceil((FINAL_TARGET - current) / daysRemaining) : 0;
+  const phaseRate = phaseDailyRate(cPhase === 'done' ? 'f4' : cPhase);
+
+  if(diff >= 0){
+    return `
+      <div class="alert ok">
+        <h3>Em dia com o plano</h3>
+        <p>${current} inscritos realizados ${diff > 0 ? `(${diff} à frente do esperado)` : '(exatamente no esperado)'} para hoje (esperado: ${expectedToday}). Para manter o ritmo até 23/08, o painel calcula ${adjustedDaily}/dia daqui pra frente.</p>
+      </div>`;
+  }
+
+  return `
+    <div class="alert">
+      <h3>${Math.abs(diff)} inscritos atrás do plano</h3>
+      <p>Esperado até hoje: ${expectedToday} · Realizado: ${current}. Esta fase previa um ritmo de ${phaseRate.toFixed(1)}/dia — para ainda chegar a 450 até 23/08, o ritmo necessário a partir de agora sobe para <strong>${adjustedDaily}/dia</strong>, com ${daysRemaining} dias restantes.</p>
+    </div>`;
 }
 
 function renderPaceStrip(){
@@ -1697,6 +1740,17 @@ async function init(){
   }
   render();
   subscribeRealtime();
+
+  /* #app nunca é substituído inteiro (só o innerHTML), então este
+     listener sobrevive a todos os re-renders. Quando o campo em edição
+     perde o foco, aplicamos qualquer atualização remota que ficou
+     pendente enquanto a pessoa digitava. */
+  document.getElementById('app').addEventListener('focusout', ()=>{
+    if(pendingRemoteRefresh){
+      pendingRemoteRefresh = false;
+      render();
+    }
+  }, true);
 }
 
 init();
